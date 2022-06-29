@@ -106,8 +106,9 @@ namespace TestTelrgramBot
                 Console.WriteLine("------------");
                 Console.WriteLine(la);
                 Console.WriteLine(lo);
-                Console.WriteLine();
+                Console.WriteLine("******");
                 Console.WriteLine(Convert.ToDouble(lng));
+                Console.WriteLine(Convert.ToDouble(lat));
                 Console.WriteLine("------------");
                 Console.ResetColor();
 
