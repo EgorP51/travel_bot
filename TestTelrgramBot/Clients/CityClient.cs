@@ -20,8 +20,7 @@ namespace TestTelrgramBot
                 RequestUri = new Uri($"https://travel-bot-api.herokuapp.com/SearchInfo?text={city}"),
                 Headers =
                 {
-                    { "X-RapidAPI-Key",Constants.ApiKey },
-                    { "X-RapidAPI-Host", "wiki-briefs.p.rapidapi.com" },
+                    { "X-RapidAPI-Key",Constants.ApiKey }
                 },
             };
            var response = await client.SendAsync(request);

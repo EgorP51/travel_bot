@@ -5,7 +5,6 @@ using TestTelrgramBot;
 
 AbungaBangaBot abungaBangaBot = new AbungaBangaBot();
 abungaBangaBot.Start();
-//Console.ReadKey();
 while (true)
 {
 
