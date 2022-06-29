@@ -71,9 +71,7 @@ namespace TestTelrgramBot
                }
             );
             int a = 0;
-            try
-            {
-                Message t = await botClient.SendPhotoAsync
+            Message t = await botClient.SendPhotoAsync
                 (
                     message.Chat.Id,
                     photo: images[numb],
@@ -91,19 +89,7 @@ namespace TestTelrgramBot
                 );
                 a = t.MessageId;
                 hotelMId = a;
-            }
-            catch (Exception ex)
-            {
-
-                Message t = await botClient.SendTextMessageAsync
-                (
-                    message.Chat.Id,
-                    text: "An error has occurred 101",
-                    cancellationToken: cancellationToken,
-                    replyToMessageId: mId
-                );
-            }
-
+            
             return a;
         }
 
