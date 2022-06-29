@@ -5,45 +5,11 @@ using TestTelrgramBot;
 
 AbungaBangaBot abungaBangaBot = new AbungaBangaBot();
 abungaBangaBot.Start();
-Console.ReadKey();
+//Console.ReadKey();
+while (true)
+{
 
-
-//var client = new HttpClient(); Hotels
-//var request = new HttpRequestMessage
-//{
-//    Method = HttpMethod.Get,
-//    RequestUri = new Uri("https://airbnb13.p.rapidapi.com/search-location?location=Rome&checkin=2022-06-14&checkout=2022-06-15&adults=1&children=0&infants=0&page=1"),
-//    Headers =
-//    {
-//        { "X-RapidAPI-Key", "225f8c7ff7mshb7e7f4e4c0c08f4p141e90jsn8eecb2014b0b" },
-//        { "X-RapidAPI-Host", "airbnb13.p.rapidapi.com" },
-//    },
-//};
-//using (var response = await client.SendAsync(request))
-//{
-//    response.EnsureSuccessStatusCode();
-//    var body = await response.Content.ReadAsStringAsync();
-//    Console.WriteLine(body);
-//}
-
-
-//var client = new HttpClient(); // Wiki
-//var request = new HttpRequestMessage
-//{
-//	Method = HttpMethod.Get,
-//	RequestUri = new Uri("https://wiki-briefs.p.rapidapi.com/search?q=Rome&topk=3"),
-//	Headers =
-//	{
-//		{ "X-RapidAPI-Key", "225f8c7ff7mshb7e7f4e4c0c08f4p141e90jsn8eecb2014b0b" },
-//		{ "X-RapidAPI-Host", "wiki-briefs.p.rapidapi.com" },
-//	},
-//};
-//using (var response = await client.SendAsync(request))
-//{
-//	response.EnsureSuccessStatusCode();
-//	var body = await response.Content.ReadAsStringAsync();
-//	Console.WriteLine(body);
-//}
+}
 
 
 
@@ -54,31 +20,6 @@ Console.ReadKey();
 
 
 
-
-
-
-
-
-
-
-
-//var client = new HttpClient();
-//var request = new HttpRequestMessage
-//{
-//	Method = HttpMethod.Get,
-//	RequestUri = new Uri("https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/Search/WebSearchAPI?q=Prado%20Museum&pageNumber=1&pageSize=10&autoCorrect=true"),
-//	Headers =
-//	{
-//		{ "X-RapidAPI-Host", "contextualwebsearch-websearch-v1.p.rapidapi.com" },
-//		{ "X-RapidAPI-Key", "225f8c7ff7mshb7e7f4e4c0c08f4p141e90jsn8eecb2014b0b" },
-//	},
-//};
-//using (var response = await client.SendAsync(request))
-//{
-//	response.EnsureSuccessStatusCode();
-//	var body = await response.Content.ReadAsStringAsync();
-//	Console.WriteLine(body);
-//}
 
 
 
