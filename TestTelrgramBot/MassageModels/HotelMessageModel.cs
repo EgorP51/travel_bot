@@ -106,13 +106,15 @@ namespace TestTelrgramBot
                 Console.WriteLine("------------");
                 Console.WriteLine(la);
                 Console.WriteLine(lo);
+                Console.WriteLine();
+                Console.WriteLine(Convert.ToDouble(lng));
                 Console.WriteLine("------------");
                 Console.ResetColor();
 
                 await botClient.SendVenueAsync
                 (
                     chatId: message.Chat.Id,
-                    latitude: la,
+                    latitude: Convert.ToDouble(lat),
                     longitude: lo,
                     title: name.ToUpper(),
                     address: name,
