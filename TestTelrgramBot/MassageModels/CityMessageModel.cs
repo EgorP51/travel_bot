@@ -142,6 +142,8 @@ namespace TestTelrgramBot
             }
             else if (callbackQuery.Data == "CityShowOnTheMap")
             {
+                Console.WriteLine(latitude);
+                Console.WriteLine(longitude);
                 await botClient.SendVenueAsync
                 (
                     chatId: callbackQuery.Message.Chat.Id,
