@@ -99,7 +99,6 @@ namespace TestTelrgramBot
                 {
                     try
                     {
-                        Console.WriteLine("PlacesNearbyMessage");
                         string type = update.CallbackQuery.Data.Replace("Info", "").ToLower();
                         placeNearlyMessages = await apiHandler.PlacesNearbyMessage(apiHandler.hotelMessageModels[ApiHandler.n].lat, apiHandler.hotelMessageModels[ApiHandler.n].lng, type);
                         if (placeNearlyMessages == null || placeNearlyMessages.Count == 0)

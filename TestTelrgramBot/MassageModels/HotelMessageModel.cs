@@ -42,10 +42,10 @@ namespace TestTelrgramBot
         public int numb { get; set; }
 
 
-            
 
 
-        public HotelMessageModel( ITelegramBotClient botClient, CancellationToken cancellationToken, Message message,int numb)
+
+        public HotelMessageModel(ITelegramBotClient botClient, CancellationToken cancellationToken, Message message, int numb)
         {
             this.botClient = botClient;
             this.cancellationToken = cancellationToken;
@@ -91,7 +91,8 @@ namespace TestTelrgramBot
                 );
                 a = t.MessageId;
                 hotelMId = a;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
 
                 Message t = await botClient.SendTextMessageAsync
@@ -108,12 +109,12 @@ namespace TestTelrgramBot
 
 
 
-        public async Task HandlerCallbackQueryHotel(CallbackQuery callbackQuery,Message message)
+        public async Task HandlerCallbackQueryHotel(CallbackQuery callbackQuery, Message message)
         {
             if (callbackQuery.Data.StartsWith("HotelShowOnTheMap"))
             {
 
-                double la = Convert.ToDouble(lat.Replace('.',','));
+                double la = Convert.ToDouble(lat.Replace('.', ','));
                 double lo = Convert.ToDouble(lng.Replace('.', ','));
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("------------");
@@ -124,8 +125,6 @@ namespace TestTelrgramBot
 
                 try
                 {
-
-
                     await botClient.SendVenueAsync
                     (
                         chatId: message.Chat.Id,
@@ -136,7 +135,8 @@ namespace TestTelrgramBot
                         cancellationToken: cancellationToken,
                        replyToMessageId: hotelMId
                     );
-                }catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
 
                     Message t = await botClient.SendTextMessageAsync
@@ -149,36 +149,23 @@ namespace TestTelrgramBot
                 }
                 return;
 
-            }else if (callbackQuery.Data.StartsWith("HotelMorePhoto"))
+            }
+            else if (callbackQuery.Data.StartsWith("HotelMorePhoto"))
             {
-                try
-                {
-                    Console.WriteLine("HotelMorePhoto");
-                    await botClient.SendTextMessageAsync(message.Chat.Id, callbackQuery.Data);
-                    await botClient.SendMediaGroupAsync
-                    (
-                       callbackQuery.Message.Chat.Id,
-                       media: new IAlbumInputMedia[]
-                       {
+                Console.WriteLine("HotelMorePhoto");
+                await botClient.SendMediaGroupAsync
+                (
+                   callbackQuery.Message.Chat.Id,
+                   media: new IAlbumInputMedia[]
+                   {
                        new InputMediaPhoto(images[0]),
                        new InputMediaPhoto(images[1]),
                        new InputMediaPhoto(images[2])
-                       },
-                       replyToMessageId: hotelMId
+                   },
+                   replyToMessageId: hotelMId
 
-                    );
+                );
 
-                }catch(Exception ex)
-                {
-                    Message t = await botClient.SendTextMessageAsync
-                    (
-                        message.Chat.Id,
-                        text: "An error has occurred",
-                        cancellationToken: cancellationToken,
-                        replyToMessageId: mId
-                    );
-                }
-                
                 return;
             }
             else if (callbackQuery.Data.StartsWith("HotelNearbyPlace"))
