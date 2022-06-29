@@ -146,8 +146,8 @@ namespace TestTelrgramBot
             }
             else if (callbackQuery.Data.StartsWith("HotelNearbyPlace"))
             {
-                PlacesNearbyInfoMassegeModel.Long = Convert.ToDouble(lng.Replace('.', ','));
-                PlacesNearbyInfoMassegeModel.Lat = Convert.ToDouble(lat.Replace('.', ','));
+                PlacesNearbyInfoMassegeModel.Long = Convert.ToDouble(lng);
+                PlacesNearbyInfoMassegeModel.Lat = Convert.ToDouble(lat);
 
                 InlineKeyboardMarkup inlineKeyboard = new
                 (
