@@ -98,7 +98,7 @@ namespace TestTelrgramBot
                 Message t = await botClient.SendTextMessageAsync
                 (
                     message.Chat.Id,
-                    text: "An error has occurred",
+                    text: "An error has occurred 101",
                     cancellationToken: cancellationToken,
                     replyToMessageId: mId
                 );
@@ -123,8 +123,6 @@ namespace TestTelrgramBot
                 Console.WriteLine("------------");
                 Console.ResetColor();
 
-                try
-                {
                     await botClient.SendVenueAsync
                     (
                         chatId: message.Chat.Id,
@@ -135,18 +133,7 @@ namespace TestTelrgramBot
                         cancellationToken: cancellationToken,
                        replyToMessageId: hotelMId
                     );
-                }
-                catch (Exception ex)
-                {
-
-                    Message t = await botClient.SendTextMessageAsync
-                    (
-                        message.Chat.Id,
-                        text: "An error has occurred",
-                        cancellationToken: cancellationToken,
-                        replyToMessageId: mId
-                    );
-                }
+                
                 return;
 
             }

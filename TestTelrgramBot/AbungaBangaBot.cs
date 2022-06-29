@@ -54,14 +54,9 @@ namespace TestTelrgramBot
         {
             if (update.Type == UpdateType.Message && update.Message?.Text != null)
             {
-                try
-                {
+               
                     await HandlerMassageAsync(botClient, update.Message);
-                }catch (Exception exception)
-                {
-                    await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
-                    return;
-                }
+                
                 return;
             }
             if (update.Type == UpdateType.CallbackQuery && apiHandler != null)
@@ -69,36 +64,22 @@ namespace TestTelrgramBot
 
                 if (update.CallbackQuery.Data.StartsWith("Hotel"))
                 {
-                    try
-                    {
-                        Console.WriteLine("HandlerCallbackQueryHotel");
+                    Console.WriteLine("HandlerCallbackQueryHotel");
                         ApiHandler.n = int.Parse(update.CallbackQuery.Data.Split(' ')[1]);
                         await apiHandler.hotelMessageModels[ApiHandler.n].HandlerCallbackQueryHotel(update.CallbackQuery, update.CallbackQuery.Message);
                         return;
-                    }catch (Exception exception)
-                    {
-                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
-                        return;
-                    }
+                   
                 }
                 else if (update.CallbackQuery.Data.StartsWith("City"))
                 {
-                    try
-                    {
                         Console.WriteLine("HandlerCallbackQueryCity");
                         await apiHandler.cityMessageModel.HandlerCallbackQueryCity(update.CallbackQuery);
                         return;
 
-                    }catch(Exception exception)
-                    {
-                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
-                        return;
-                    }
                 }
                 else if (update.CallbackQuery.Data.StartsWith("Info"))
                 {
-                    try
-                    {
+                   
                         string type = update.CallbackQuery.Data.Replace("Info", "").ToLower();
                         placeNearlyMessages = await apiHandler.PlacesNearbyMessage(apiHandler.hotelMessageModels[ApiHandler.n].lat, apiHandler.hotelMessageModels[ApiHandler.n].lng, type);
                         if (placeNearlyMessages == null || placeNearlyMessages.Count == 0)
@@ -120,30 +101,18 @@ namespace TestTelrgramBot
                         }
                         return;
 
-                    }catch (Exception exception)
-                    {
-                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
-                        return;
-                    }
                 }
                 else if (update.CallbackQuery.Data.StartsWith("Place"))
                 {
-                    try
-                    {
+                   
                         int n = int.Parse(update.CallbackQuery.Data.Split(' ')[1]);
                         await placeNearlyMessages[n].HandlerCallbackQueryInfo(update.CallbackQuery, botClient);
-                        return;
-                    }catch(Exception exception)
-                    {
-                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
-                        return;
-                    }
+                    return;
 
                 }
                 else if(update.CallbackQuery.Data == "SaveRoute")
                 {
-                    try
-                    {
+                   
                         var route = await new DatabaseClient().AddItem(
                             apiHandler.userId,
                             apiHandler.city, PlacesNearbyInfoMassegeModel.routeUrl);
@@ -151,31 +120,19 @@ namespace TestTelrgramBot
                         Console.WriteLine(update.CallbackQuery.From.Username + " сохранил(а) маршрут");
                         await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Your route has been saved");
                         return;
-                    }catch (Exception exception)
-                    {
-                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
-                        return;
-                    }
                    
                 }
                 else if (update.CallbackQuery.Data == "Delete")
                 {
-                    try
-                    {
                         await new DatabaseClient().DeleteAllRoutes(update.CallbackQuery.Message.Chat.Id.ToString(), apiHandler.city);
                         var yur = await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Route deleted successfully");
                         return;
-                    }catch(Exception exception)
-                    {
-                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
-                        return;
-                    }
+                   
 
                 }
                 else if (update.CallbackQuery.Data.StartsWith("delete"))
                 {
-                    try
-                    {
+                   
                         string[] info = update.CallbackQuery.Data.Split('.');
                         foreach (var y in info)
                         {
@@ -191,11 +148,7 @@ namespace TestTelrgramBot
                         Console.WriteLine(update.CallbackQuery.From.Username + " удалил(а) маршрут");
                         await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "The route has been deleted");
                         return;
-                    }catch (Exception exception)
-                    {
-                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
-                        return;
-                    }
+                   
                 }
                 else
                 {
