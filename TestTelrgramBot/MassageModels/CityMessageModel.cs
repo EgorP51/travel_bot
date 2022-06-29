@@ -137,7 +137,7 @@ namespace TestTelrgramBot
                     },
                 }
              );
-                await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Should help)))",replyMarkup: inlineKeyboard);
+                await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Should help)))", replyMarkup: inlineKeyboard);
                 return;
             }
             else if (callbackQuery.Data == "CityShowOnTheMap")

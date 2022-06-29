@@ -48,7 +48,7 @@ namespace TestTelrgramBot
             this.message = message;
             this.city = city;
 
-            
+
 
             searchInfoModel = new CityClient().GetCityInfoAsync(city).Result; // Информация о городе из джсона
             weatherModel = new WeatherClient().GetWeatherAsync(city).Result;  // Иnформация о погоде из джсона
@@ -69,9 +69,9 @@ namespace TestTelrgramBot
         {
             if (weatherModel != null && searchInfoModel != null)
             {
-                if (Compute(weatherModel.location.city.ToLower(), searchInfoModel.title.ToLower())>60 &&
-                    Compute(weatherModel.location.city.ToLower(), text.ToLower())>60 &&
-                    Compute(text.ToLower(), searchInfoModel.title.ToLower())>60)
+                if (Compute(weatherModel.location.city.ToLower(), searchInfoModel.title.ToLower()) > 60 &&
+                    Compute(weatherModel.location.city.ToLower(), text.ToLower()) > 60 &&
+                    Compute(text.ToLower(), searchInfoModel.title.ToLower()) > 60)
                 {
                     return true;
                 }
@@ -132,7 +132,7 @@ namespace TestTelrgramBot
                         distance = placeNearbyInfoModel.results[i].distance,
                         numb = i
                     }
-                ) ;
+                );
             }
 
             return placesNearbyInfoMassegeModels;
@@ -164,7 +164,8 @@ namespace TestTelrgramBot
                     cityMessageModel.title = searchInfoModel.title;
                     cityMessageModel.infoUrl = searchInfoModel.url;
                     return cityMessageModel;
-                }catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex);
                     return null;
@@ -184,7 +185,7 @@ namespace TestTelrgramBot
             Console.WriteLine("Я в GetHotelAsync(string date)1");
 
             hotelMessageModels = await HotelsList(date);// here
-            
+
             Console.WriteLine("Я в GetHotelAsync(string date)2");
             if (hotelMessageModels == null)
             {
@@ -282,7 +283,8 @@ namespace TestTelrgramBot
             {
                 return null;
 
-            }else if(hotelMessageModels == null)
+            }
+            else if (hotelMessageModels == null)
             {
                 return null;
             }

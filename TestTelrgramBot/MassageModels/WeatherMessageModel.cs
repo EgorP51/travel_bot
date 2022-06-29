@@ -11,7 +11,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TestTelrgramBot
 {
-    public class WeatherMessageModel 
+    public class WeatherMessageModel
     {
 
         public ITelegramBotClient botClient { get; set; }
@@ -30,7 +30,7 @@ namespace TestTelrgramBot
         }
         public async Task GetWeatherMessageModel(Message message)
         {
-            await botClient.SendTextMessageAsync(message.Chat.Id, forecasts,replyToMessageId: mId);
+            await botClient.SendTextMessageAsync(message.Chat.Id, forecasts, replyToMessageId: mId);
 
             return;
         }

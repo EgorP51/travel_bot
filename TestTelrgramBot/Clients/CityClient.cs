@@ -13,46 +13,39 @@ namespace TestTelrgramBot
     {
         public async Task<SearchInfoModel> GetCityInfoAsync(string city)
         {
-            try
+            var client = new HttpClient(); // Wiki
+            var request = new HttpRequestMessage
             {
-
-
-                var client = new HttpClient(); // Wiki
-                var request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Get,
-                    RequestUri = new Uri($"https://travel-bot-api.herokuapp.com/SearchInfo?text={city}"),
-                    Headers =
+                Method = HttpMethod.Get,
+                RequestUri = new Uri($"https://travel-bot-api.herokuapp.com/SearchInfo?text={city}"),
+                Headers =
                 {
                     { "X-RapidAPI-Key",Constants.ApiKey }
                 },
-                };
-                var response = await client.SendAsync(request);
-                if (response.IsSuccessStatusCode)
+            };
+            var response = await client.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                response.EnsureSuccessStatusCode();
+                var body = await response.Content.ReadAsStringAsync();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine(body);
+                Console.ResetColor();
+                SearchInfoModel model = JsonConvert.DeserializeObject<SearchInfoModel>(body);
+                if (model != null)
                 {
-                    response.EnsureSuccessStatusCode();
-                    var body = await response.Content.ReadAsStringAsync();
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine(body);
-                    Console.ResetColor();
-                    SearchInfoModel model = JsonConvert.DeserializeObject<SearchInfoModel>(body);
-                    if (model != null)
-                    {
-                        return model;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return model;
                 }
                 else
                 {
                     return null;
                 }
-            }catch (Exception ex)
+            }
+            else
             {
                 return null;
             }
+
 
         }
     }

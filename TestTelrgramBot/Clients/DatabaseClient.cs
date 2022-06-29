@@ -14,7 +14,7 @@ namespace TestTelrgramBot.Clients
         private string apiAddress = "https://travel-bot-api.herokuapp.com/";
         private HttpClient client = new HttpClient();
 
-        public async Task<DatabaseModel> GetFromDb(string userid,string city)
+        public async Task<DatabaseModel> GetFromDb(string userid, string city)
         {
             try
             {
@@ -34,13 +34,14 @@ namespace TestTelrgramBot.Clients
                 {
                     return null;
                 }
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return null;
             }
         }
 
-        public async Task<HttpResponseMessage> DeleteAllRoutes(string userId,string city)
+        public async Task<HttpResponseMessage> DeleteAllRoutes(string userId, string city)
         {
             try
             {
@@ -73,90 +74,72 @@ namespace TestTelrgramBot.Clients
 
         public async Task<string> PostToDb(DatabaseModel databaseModel)
         {
-            try
+            var json = JsonConvert.SerializeObject(databaseModel);
+
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var post = await client.PostAsync("https://travel-bot-api.herokuapp.com/InfoFromDB/add", data);
+
+            var postcontent = post.Content.ReadAsStringAsync().Result;
+
+            if (post.IsSuccessStatusCode && postcontent != null)
             {
-                var json = JsonConvert.SerializeObject(databaseModel);
-
-                var data = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var post = await client.PostAsync("https://travel-bot-api.herokuapp.com/InfoFromDB/add", data);
-
-                var postcontent = post.Content.ReadAsStringAsync().Result;
-
-                if (post.IsSuccessStatusCode && postcontent != null)
-                {
-                    return postcontent;
-                }
-                else
-                {
-                    return null;
-                }
-            }catch (Exception ex)
+                return postcontent;
+            }
+            else
             {
                 return null;
             }
+
         }
 
-        public async Task<string> AddItem(string userid, string city,string newRoute)
+        public async Task<string> AddItem(string userid, string city, string newRoute)
         {
-            try
+            var person = new PutBody
             {
-                var person = new PutBody
-                {
-                    City = city,
-                    UserId = userid,
-                    NewRoute = newRoute
-                };
+                City = city,
+                UserId = userid,
+                NewRoute = newRoute
+            };
 
-                var json = JsonConvert.SerializeObject(person);
-                var data = new StringContent(json, Encoding.UTF8, "application/json");
-                client.BaseAddress = new Uri("https://travel-bot-api.herokuapp.com/InfoFromDB/");
-                var response = client.PutAsJsonAsync("https://travel-bot-api.herokuapp.com/InfoFromDB/addItem", person).Result;
+            var json = JsonConvert.SerializeObject(person);
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            client.BaseAddress = new Uri("https://travel-bot-api.herokuapp.com/InfoFromDB/");
+            var response = client.PutAsJsonAsync("https://travel-bot-api.herokuapp.com/InfoFromDB/addItem", person).Result;
 
-                if (response.IsSuccessStatusCode && response != null)
-                {
-                    return response.Content.ReadAsStringAsync().Result;
-                }
-                else
-                {
-                    return null;
-                }
-
-            }catch(Exception ex)
+            if (response.IsSuccessStatusCode && response != null)
+            {
+                return response.Content.ReadAsStringAsync().Result;
+            }
+            else
             {
                 return null;
             }
+
         }
 
 
         public async Task<string> DeleteItem(string userid, string city, string newRoute)
         {
-            try
+            var person = new PutBody
             {
+                City = city,
+                UserId = userid,
+                NewRoute = newRoute
+            };
 
-                var person = new PutBody
-                {
-                    City = city,
-                    UserId = userid,
-                    NewRoute = newRoute
-                };
+            var json = JsonConvert.SerializeObject(person);
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            client.BaseAddress = new Uri("https://travel-bot-api.herokuapp.com/InfoFromDB/");
+            var response = client.PutAsJsonAsync("https://travel-bot-api.herokuapp.com/InfoFromDB/deleteItem", person).Result;
 
-                var json = JsonConvert.SerializeObject(person);
-                var data = new StringContent(json, Encoding.UTF8, "application/json");
-                client.BaseAddress = new Uri("https://travel-bot-api.herokuapp.com/InfoFromDB/");
-                var response = client.PutAsJsonAsync("https://travel-bot-api.herokuapp.com/InfoFromDB/deleteItem", person).Result;
+            return response.Content.ReadAsStringAsync().Result;
 
+            if (response.IsSuccessStatusCode && response != null)
+            {
                 return response.Content.ReadAsStringAsync().Result;
-
-                if(response.IsSuccessStatusCode && response != null)
-                {
-                    return response.Content.ReadAsStringAsync().Result;
-                }
-
-            }catch(Exception ex)
-            {
-                return null;
             }
+
         }
 
     }

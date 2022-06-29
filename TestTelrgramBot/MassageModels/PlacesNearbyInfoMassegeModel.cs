@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace TestTelrgramBot
 {
-    public class PlacesNearbyInfoMassegeModel 
+    public class PlacesNearbyInfoMassegeModel
     {
         public ITelegramBotClient botClient { get; set; }
         public CancellationToken cancellationToken { get; set; }
@@ -30,7 +30,7 @@ namespace TestTelrgramBot
         public static double Lat { get; set; }
         public static double Long { get; set; }
         public static string routeUrl { get; set; }
-        
+
 
         public PlacesNearbyInfoMassegeModel(ITelegramBotClient botClient, CancellationToken cancellationToken, Message message)
         {
@@ -62,9 +62,9 @@ namespace TestTelrgramBot
             );
         }
 
-        public async Task HandlerCallbackQueryInfo(CallbackQuery callbackQuery,ITelegramBotClient botClient)
+        public async Task HandlerCallbackQueryInfo(CallbackQuery callbackQuery, ITelegramBotClient botClient)
         {
-            if(callbackQuery.Data.StartsWith("PlaceMap"))
+            if (callbackQuery.Data.StartsWith("PlaceMap"))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("-------------");
@@ -83,7 +83,8 @@ namespace TestTelrgramBot
                         address: address,
                         cancellationToken: cancellationToken
                     );
-                }catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     Message t = await botClient.SendTextMessageAsync
                     (
@@ -120,16 +121,16 @@ namespace TestTelrgramBot
                         InlineKeyboardButton.WithCallbackData("Save route 🟢","SaveRoute"),
                     }
                 }
-               
+
              );
-                
+
 
                 Console.ForegroundColor = ConsoleColor.Green;
 
                 Console.WriteLine(">");
                 Console.WriteLine($" Your route: https://www.google.com/maps/dir/?api=1&origin={latitude.ToString().Replace(',', '.')},{longitude.ToString().Replace(',', '.')}&destination={Lat.ToString().Replace(',', '.')},{Long.ToString().Replace(',', '.')}&travelmode=walking");
                 Console.WriteLine(">");
-                
+
                 Console.ResetColor();
                 //await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $" ",replyMarkup: inlineKeyboard);
                 await botClient.SendStickerAsync(message.Chat.Id, "https://tgram.ru/wiki/stickers/img/JohnnyDepp_videopack/gif/10.gif", replyMarkup: inlineKeyboard);

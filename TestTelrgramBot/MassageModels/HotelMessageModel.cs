@@ -87,9 +87,9 @@ namespace TestTelrgramBot
                     cancellationToken: cancellationToken,
                     replyToMessageId: mId
                 );
-                a = t.MessageId;
-                hotelMId = a;
-            
+            a = t.MessageId;
+            hotelMId = a;
+
             return a;
         }
 
@@ -109,17 +109,17 @@ namespace TestTelrgramBot
                 Console.WriteLine("------------");
                 Console.ResetColor();
 
-                    await botClient.SendVenueAsync
-                    (
-                        chatId: message.Chat.Id,
-                        latitude: la,
-                        longitude: lo,
-                        title: name.ToUpper(),
-                        address: name,
-                        cancellationToken: cancellationToken,
-                       replyToMessageId: hotelMId
-                    );
-                
+                await botClient.SendVenueAsync
+                (
+                    chatId: message.Chat.Id,
+                    latitude: la,
+                    longitude: lo,
+                    title: name.ToUpper(),
+                    address: name,
+                    cancellationToken: cancellationToken,
+                   replyToMessageId: hotelMId
+                );
+
                 return;
 
             }
