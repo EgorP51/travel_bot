@@ -14,12 +14,13 @@ using Telegram.Bot.Exceptions;
 using System.Text.RegularExpressions;
 using TestTelrgramBot.Clients;
 using TestTelrgramBot.Models;
+using TestTelrgramBot.Constant;
 
 namespace TestTelrgramBot
 {
     class AbungaBangaBot
     {
-        TelegramBotClient botClient = new TelegramBotClient("5583909669:AAEUHGYg7NEA9VrWMz0gLiTmnn-zvt8qQwU"); // key like a constant
+        TelegramBotClient botClient = new TelegramBotClient(Constants.BotKey);
         CancellationToken cancellationToken = new CancellationToken();
         ReceiverOptions receiverOptions = new ReceiverOptions { AllowedUpdates = { } };
         public List<HotelMessageModel> hotelMessageModels { get; set; }
@@ -33,7 +34,7 @@ namespace TestTelrgramBot
         {
             botClient.StartReceiving(HandlerUpdateAsync, HandlerError, receiverOptions, cancellationToken);
             var botMe = await botClient.GetMeAsync();
-            Console.WriteLine("Пахаю, бос...");
+            Console.WriteLine("Bot at work...");
             Console.ReadKey();
         }
 
@@ -53,7 +54,14 @@ namespace TestTelrgramBot
         {
             if (update.Type == UpdateType.Message && update.Message?.Text != null)
             {
-                await HandlerMassageAsync(botClient, update.Message);
+                try
+                {
+                    await HandlerMassageAsync(botClient, update.Message);
+                }catch (Exception exception)
+                {
+                    await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
+                    return;
+                }
                 return;
             }
             if (update.Type == UpdateType.CallbackQuery && apiHandler != null)
@@ -61,76 +69,134 @@ namespace TestTelrgramBot
 
                 if (update.CallbackQuery.Data.StartsWith("Hotel"))
                 {
-                    Console.WriteLine("HandlerCallbackQueryHotel");
-                    ApiHandler.n = int.Parse(update.CallbackQuery.Data.Split(' ')[1]);
-                    await apiHandler.hotelMessageModels[ApiHandler.n].HandlerCallbackQueryHotel(update.CallbackQuery, update.CallbackQuery.Message);
-                    return;
+                    try
+                    {
+                        Console.WriteLine("HandlerCallbackQueryHotel");
+                        ApiHandler.n = int.Parse(update.CallbackQuery.Data.Split(' ')[1]);
+                        await apiHandler.hotelMessageModels[ApiHandler.n].HandlerCallbackQueryHotel(update.CallbackQuery, update.CallbackQuery.Message);
+                        return;
+                    }catch (Exception exception)
+                    {
+                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
+                        return;
+                    }
                 }
                 else if (update.CallbackQuery.Data.StartsWith("City"))
                 {
-                    Console.WriteLine("HandlerCallbackQueryCity");
-                    await apiHandler.cityMessageModel.HandlerCallbackQueryCity(update.CallbackQuery);
-                    return;
+                    try
+                    {
+                        Console.WriteLine("HandlerCallbackQueryCity");
+                        await apiHandler.cityMessageModel.HandlerCallbackQueryCity(update.CallbackQuery);
+                        return;
+
+                    }catch(Exception exception)
+                    {
+                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
+                        return;
+                    }
                 }
                 else if (update.CallbackQuery.Data.StartsWith("Info"))
                 {
-                    Console.WriteLine("PlacesNearbyMessage");
-                    string type = update.CallbackQuery.Data.Replace("Info", "").ToLower();
-                    placeNearlyMessages = await apiHandler.PlacesNearbyMessage(apiHandler.hotelMessageModels[ApiHandler.n].lat, apiHandler.hotelMessageModels[ApiHandler.n].lng, type);
-                    int count = placeNearlyMessages.Count>6? 6:placeNearlyMessages.Count - 1;
-                    for (int i = 0; i < count; i++)
+                    try
                     {
-                        if(placeNearlyMessages[i].numb == i)
+                        Console.WriteLine("PlacesNearbyMessage");
+                        string type = update.CallbackQuery.Data.Replace("Info", "").ToLower();
+                        placeNearlyMessages = await apiHandler.PlacesNearbyMessage(apiHandler.hotelMessageModels[ApiHandler.n].lat, apiHandler.hotelMessageModels[ApiHandler.n].lng, type);
+                        if (placeNearlyMessages == null || placeNearlyMessages.Count == 0)
                         {
-                            placeNearlyMessages[i].GetPlacesNearbyModel(update.CallbackQuery.Message);
-                            System.Threading.Thread.Sleep(44);
+                            await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
+                            return;
                         }
+                        else
+                        {
+                            int count = placeNearlyMessages.Count > 6 ? 6 : placeNearlyMessages.Count - 1;
+                            for (int i = 0; i < count; i++)
+                            {
+                                if (placeNearlyMessages[i].numb == i)
+                                {
+                                    placeNearlyMessages[i].GetPlacesNearbyModel(update.CallbackQuery.Message);
+                                    System.Threading.Thread.Sleep(44);
+                                }
+                            }
+                        }
+                        return;
+
+                    }catch (Exception exception)
+                    {
+                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
+                        return;
                     }
-                    return;
                 }
                 else if (update.CallbackQuery.Data.StartsWith("Place"))
                 {
-                    int n = int.Parse(update.CallbackQuery.Data.Split(' ')[1]);
-                    await placeNearlyMessages[n].HandlerCallbackQueryInfo(update.CallbackQuery, botClient);
-                    return;
+                    try
+                    {
+                        int n = int.Parse(update.CallbackQuery.Data.Split(' ')[1]);
+                        await placeNearlyMessages[n].HandlerCallbackQueryInfo(update.CallbackQuery, botClient);
+                        return;
+                    }catch(Exception exception)
+                    {
+                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
+                        return;
+                    }
 
                 }
                 else if(update.CallbackQuery.Data == "SaveRoute")
                 {
-                    var route = await new DatabaseClient().AddItem(
-                        apiHandler.userId,
-                        apiHandler.city, PlacesNearbyInfoMassegeModel.routeUrl);
-                    Console.WriteLine(route);
-                    Console.WriteLine(update.CallbackQuery.From.Username + " сохранил(а) маршрут");
-                    await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Your route has been saved");
-                    return;
+                    try
+                    {
+                        var route = await new DatabaseClient().AddItem(
+                            apiHandler.userId,
+                            apiHandler.city, PlacesNearbyInfoMassegeModel.routeUrl);
+                        Console.WriteLine(route);
+                        Console.WriteLine(update.CallbackQuery.From.Username + " сохранил(а) маршрут");
+                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Your route has been saved");
+                        return;
+                    }catch (Exception exception)
+                    {
+                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
+                        return;
+                    }
                    
                 }
                 else if (update.CallbackQuery.Data == "Delete")
                 {
-                    await new DatabaseClient().DeleteAllRoutes(update.CallbackQuery.Message.Chat.Id.ToString(), apiHandler.city);
-                    var yur = await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Route deleted successfully");
-                    return;
+                    try
+                    {
+                        await new DatabaseClient().DeleteAllRoutes(update.CallbackQuery.Message.Chat.Id.ToString(), apiHandler.city);
+                        var yur = await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Route deleted successfully");
+                        return;
+                    }catch(Exception exception)
+                    {
+                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
+                        return;
+                    }
 
                 }
                 else if (update.CallbackQuery.Data.StartsWith("delete"))
-                {//$"delete.{message.From.Id}.{apiHandler.city}.{i}"
-                    string[] info = update.CallbackQuery.Data.Split('.');
-                    foreach(var y in info)
+                {
+                    try
                     {
-                        Console.WriteLine(y);
+                        string[] info = update.CallbackQuery.Data.Split('.');
+                        foreach (var y in info)
+                        {
+                            Console.WriteLine(y);
+                        }
+                        Console.WriteLine(info[3]);
+                        Console.WriteLine(userRoutes[int.Parse(info[3])]);
+                        string route = userRoutes[int.Parse(info[3])];
+
+                        var delRoute = await new DatabaseClient().DeleteItem(info[1], info[2], route);
+
+                        Console.WriteLine(route);
+                        Console.WriteLine(update.CallbackQuery.From.Username + " удалил(а) маршрут");
+                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "The route has been deleted");
+                        return;
+                    }catch (Exception exception)
+                    {
+                        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.From.Id, "An error has occurred");
+                        return;
                     }
-                    Console.WriteLine(info[3]);
-                    Console.WriteLine(userRoutes[int.Parse(info[3])]);
-                    string route = userRoutes[int.Parse(info[3])];
-
-                    var delRoute = await new DatabaseClient().DeleteItem(info[1],info[2],route);
-
-                    Console.WriteLine(route);
-                    Console.WriteLine(update.CallbackQuery.From.Username + " удалил(а) маршрут");
-                    await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "The route has been deleted");
-                    return;
-
                 }
                 else
                 {
@@ -162,7 +228,8 @@ namespace TestTelrgramBot
                 reviewText = false;
                 await botClient.SendTextMessageAsync(message.Chat.Id, "Thanks ✨");
                 return;
-            }else
+            }
+            else
             if (message.Text == "/start")
             {
 
@@ -252,11 +319,7 @@ namespace TestTelrgramBot
                 }
                 else
                 {
-                    await botClient.SendTextMessageAsync(message.Chat.Id, "<em>Enter the city</em>", ParseMode.Html);
-                    //await botClient.SendTextMessageAsync(message.Chat.Id, "<a>Enter the city</a>", ParseMode.Html);
-                    //await botClient.SendTextMessageAsync(message.Chat.Id, "<b>Enter the city</b>", ParseMode.Html); 
-                    //await botClient.SendTextMessageAsync(message.Chat.Id, "<strong>Enter the city</strong>", ParseMode.Html);
-                    //await botClient.SendTextMessageAsync(message.Chat.Id, "<del>Enter the city</del>", ParseMode.Html);
+                    await botClient.SendTextMessageAsync(message.Chat.Id, "Enter the city");
                     return;
                 }
             }
@@ -523,183 +586,3 @@ namespace TestTelrgramBot
 
 
 
-
-
-//if(message.Text != null)
-//{
-//    Console.WriteLine(message.From.Username);
-//    Console.WriteLine(message.From.FirstName);
-//    Console.WriteLine(message.Text);
-//}
-//if (message.Text == "/start")
-//{
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "Все данные с устройства будут удалены через 5 секунд");
-//    System.Threading.Thread.Sleep(2500);
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "5");
-//    System.Threading.Thread.Sleep(1000);
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "4");
-//    System.Threading.Thread.Sleep(1000);
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "3");
-//    System.Threading.Thread.Sleep(1000);
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "2");
-//    System.Threading.Thread.Sleep(1000);
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "1");
-//    System.Threading.Thread.Sleep(1000);
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "AbungaBanga");
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "Для начала работы с ботом тык сюда /help");
-//    return;
-//}
-//if (message.Text == "/keyboard")
-//{
-
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "Функция временно не работает:)");
-//    return;
-//}
-//if (message.Text == "Номер отеля")
-//{
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "https://exp.cdn-hotels.com/hotels/13000000/12820000/12816300/12816287/8e60f7a5_z.jpg?impolicy=fcrop&w=1000&h=666&q=medium");
-//    return;
-//}
-//if (message.Text == "Мыло")
-//{
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "https://exp.cdn-hotels.com/hotels/13000000/12820000/12816300/12816287/bd2c02e9_z.jpg?impolicy=fcrop&w=1000&h=666&q=medium");
-//    return;
-//}
-//if (message.Text == "Relax" || message.Text == "/Relax")
-//{
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-//    InlineKeyboardMarkup inlineKeyboardMarkup = new
-//        (
-//        new[]
-//        {
-//            new[]
-//            {
-//                InlineKeyboardButton.WithUrl("Лайк","https://www.meme-arsenal.com/memes/0b1401824dc8aaef8470d02c9c08897b.jpg"),
-//                InlineKeyboardButton.WithCallbackData("НЕ ТЫКАТЬ",callbackData: $"Ну прям тоже лайк")
-
-//            }
-//        }
-//        );
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "Выбор за тобой: ", replyMarkup: inlineKeyboardMarkup);
-//    return;
-//}
-//if (message.Text == "/photo")
-//{
-//    await botClient.SendPhotoAsync(
-//        chatId: message.Chat.Id,
-//        photo: "https://www.clever-media.ru/upload/resize_cache/iblock/e18/800_600_090cf9bfc02c81ba0a02cc940d6445018/e182549ed40479cfd34e626ccf34bbe7.jpg",
-//        "Caption");
-//    //Message message1 = new Message();
-
-//    return;
-//}
-//if (message.Text == "/kpi")
-//{
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "Возможно вы имели в виду Поляна!?");
-//    var pol = await botClient.SendPhotoAsync(message.Chat.Id, photo: "https://tut-kiev.com/wp-content/uploads/2018/06/20180526_134658-1024x576.jpg");
-//    InlineKeyboardMarkup inlineKeyboardMarkup = new
-//        (
-//        new[]
-//        {
-//            new[]
-//            {
-//                InlineKeyboardButton.WithUrl("Поехали?",
-//                "https://www.google.com/maps/place/%D0%A1%D0%BA%D0%B2%D0%B5%D1%80+%D1%96%D0%BC%D0%B5%D0%BD%D1%96+%D0%9E%D0%BB%D0%B5%D0%BD%D0%B8+%D0%A2%D0%B5%D0%BB%D1%96%D0%B3%D0%B8/@50.4474617,30.4534772,18.12z/data=!4m9!1m2!2m1!1z0J_QvtC70Y_QvdCwINC60L_QuA!3m5!1s0x40d4cc27725b49d7:0xd00801d72ba54c32!8m2!3d50.4473255!4d30.453954!15sChPQn9C-0LvRj9C90LAg0LrQv9C4WhUiE9C_0L7Qu9GP0L3QsCDQutC_0LiSAQRwYXJrmgEkQ2hkRFNVaE5NRzluUzBWSlEwRm5TVVJKYlV4RWFtZEJSUkFC"),
-//                //https://maps.google.com?saddr=Current+Location&daddr=41,79183,12,25679
-
-//            }
-
-//        }
-//        );
-//    await botClient.SendTextMessageAsync(message.Chat.Id, "Выбор за тобой: ", replyMarkup: inlineKeyboardMarkup);
-
-//    return;
-//}
-//if (message.Text == "/coordinates")
-//{
-//    Message message1 = await botClient.SendVenueAsync
-//    (
-//        chatId: message.Chat.Id,
-//        latitude: 41.79183f,
-//        longitude: 12.25679f,
-//        title: "City name",
-//        address: "Ноtel name",
-//        cancellationToken: cancellationToken
-//    );
-//}
-//if (message.Text == "/chikibryak")
-//{
-//    await botClient.SendTextMessageAsync(chatId: message.Chat.Id, "Ты чикибряк!");
-//    var photo2 = await botClient.SendPhotoAsync(
-//       chatId: message.Chat.Id,
-//       photo: "https://memepedia.ru/wp-content/uploads/2019/07/chilipizdrik-9.jpg");
-//    return;
-//}
-//if (message.Text == "/help")
-//{
-//    await botClient.SendTextMessageAsync(message.Chat.Id,
-//        "/coordinates проверка координат\n" +
-//        "/photos что же это может быть?\n" +
-//        "/chikibryak чикибряк\n" +
-//        "/kpi ну как бы...\n" +
-//        "/Relax просто попробуй\n" +
-//        "/testGroupPhoto проверка отправки альбома\n" +
-//        "/testInlineKeyboardButton testInlineKeyboardButton)))\n" +
-//        "/???\n" +
-//        "/photos2\n" +
-//        "/testHotelMess => тестовая отправка информации про отель\n" +
-//        "/justTry рекомендую тыкнуть:)\n" +
-//        "/testCity => тест сообщения про город");
-//    return;
-//}
-//if (message.Text == "/testGroupPhoto")
-//{
-//    var fGroup = await botClient.SendMediaGroupAsync(
-//       message.Chat.Id,
-//       media: new IAlbumInputMedia[]
-//       {
-//             new InputMediaPhoto("https://static-cse.canva.com/blob/191106/00_verzosa_winterlandscapes_jakob-owens-tb-2640x1485.jpg"),
-//             new InputMediaPhoto("https://www.fotoget.net/wp-content/uploads/2016/02/man_north-1650x1100.jpg"),
-//             new InputMediaPhoto("https://bigpicture.ru/wp-content/uploads/2016/09/rotzbruecke-germany-instagram2.jpg"),
-//             new InputMediaPhoto("https://cameralabs.org/media/cameralabs/images/daily/2012/09/26/6_c30a5cdd99a4f89dc9a3d22bda29372c.jpg"),
-//       });
-//    return;
-//}
-//if (message.Text == "/testInlineKeyboardButton")
-//{
-//    InlineKeyboardMarkup inlineKeyboard = new(new[]
-//    {
-//        // first row
-//        new []
-//        {
-//            InlineKeyboardButton.WithCallbackData(text: "1.1", callbackData: "11"),
-//            InlineKeyboardButton.WithCallbackData(text: "1.2", callbackData: "12"),
-//        },
-//        // second row
-//        new []
-//        {
-//            InlineKeyboardButton.WithCallbackData(text: "2.1", callbackData: "21"),
-//            InlineKeyboardButton.WithCallbackData(text: "2.2", callbackData: "22"),
-//        },
-//    });
-//    Message sentMessage = await botClient.SendTextMessageAsync(
-//        chatId: message.Chat.Id,
-//        text: "A message with an inline keyboard markup",
-//        replyMarkup: inlineKeyboard,
-//        cancellationToken: cancellationToken);
-//    return;
-//}
-//if(message.Text == "/???")
-//{
-//    await botClient.SendTextMessageAsync(chatId: message.Chat.Id,"??" );
-//    return;
-//}
-//if (message.Text == "/photos2")
-//{
-//    await botClient.SendPhotoAsync(
-//        chatId: message.Chat.Id,
-//        photo: "https://s2.afisha.ru/mediastorage/c2/97/fdcd7fa6efbd491da3e83daa97c2.jpg"
-//        );
-
-//    return;
-//}

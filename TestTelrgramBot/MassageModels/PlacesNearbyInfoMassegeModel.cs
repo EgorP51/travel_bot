@@ -57,7 +57,7 @@ namespace TestTelrgramBot
             (
 
                 chatId: message.Chat.Id,
-                text: $"{numb}\n{name}\n{address}\n{phone_number}",
+                text: $"{name}\n{address}\n{phone_number}",
                 replyMarkup: inlineKeyboard
             );
         }
@@ -72,15 +72,27 @@ namespace TestTelrgramBot
                 Console.WriteLine(longitude);
                 Console.WriteLine("-------------");
                 Console.ResetColor();
-                await botClient.SendVenueAsync
-                (
-                    chatId: message.Chat.Id,
-                    latitude: latitude,
-                    longitude: longitude,
-                    title: name,
-                    address: address,
-                    cancellationToken: cancellationToken
-                );
+                try
+                {
+                    await botClient.SendVenueAsync
+                    (
+                        chatId: message.Chat.Id,
+                        latitude: latitude,
+                        longitude: longitude,
+                        title: name,
+                        address: address,
+                        cancellationToken: cancellationToken
+                    );
+                }catch (Exception ex)
+                {
+                    Message t = await botClient.SendTextMessageAsync
+                    (
+                        message.Chat.Id,
+                        text: "An error has occurred",
+                        cancellationToken: cancellationToken,
+                        replyToMessageId: mId
+                    );
+                }
                 return;
             }
             if (callbackQuery.Data.StartsWith("PlaceRoute"))

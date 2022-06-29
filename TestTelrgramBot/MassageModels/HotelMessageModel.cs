@@ -24,20 +24,17 @@ namespace TestTelrgramBot
 
 
         public string url { get; set; }
-        public string deeplink { get; set; }
         public string name { get; set; }
         public string bathrooms { get; set; }
         public int bedrooms { get; set; }
         public int beds { get; set; }
         public string[] images { get; set; }
-        public string hostThumbnail { get; set; }
         public string lat { get; set; }
         public string lng { get; set; }
         public int person { get; set; }
         public float rating { get; set; }
         public string address { get; set; }
         public int rate { get; set; }
-        public string currency { get; set; }
         public int total { get; set; }
         public string title { get; set; }
         public string amount { get; set; }
@@ -72,37 +69,39 @@ namespace TestTelrgramBot
                         InlineKeyboardButton.WithCallbackData(text: "Places nearby 📍", callbackData: $"HotelNearbyPlace {numb.ToString()}")
                     },
                }
-            ); 
-            Message t =  await botClient.SendPhotoAsync
-            (
-                message.Chat.Id,
-                photo: images[numb],
-                caption: $"{name.ToUpper()}\n" +
-                $"Address: {address}" +
-                $"Bathrooms: {bathrooms}\n" +
-                $"Bedrooms: {bedrooms}\n" +
-                $"Beds: {beds}\n" +
-                $"Rating: {rating}\n" +
-                $"ReviewAmenities: \n{string.Join(", ", previewAmenities)}\n " +
-                $"Total price: {total}",
-                replyMarkup: inlineKeyboard,
-                cancellationToken: cancellationToken,
-                replyToMessageId: mId
             );
-            int a = t.MessageId;
-            hotelMId = a;
+            int a = 0;
+            try
+            {
+                Message t = await botClient.SendPhotoAsync
+                (
+                    message.Chat.Id,
+                    photo: images[numb],
+                    caption: $"{name.ToUpper()}\n" +
+                    $"Address: {address}" +
+                    $"Bathrooms: {bathrooms}\n" +
+                    $"Bedrooms: {bedrooms}\n" +
+                    $"Beds: {beds}\n" +
+                    $"Rating: {rating}\n" +
+                    $"ReviewAmenities: \n{string.Join(", ", previewAmenities)}\n " +
+                    $"Total price: {total} $",
+                    replyMarkup: inlineKeyboard,
+                    cancellationToken: cancellationToken,
+                    replyToMessageId: mId
+                );
+                a = t.MessageId;
+                hotelMId = a;
+            }catch (Exception ex)
+            {
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(">");
-            Console.WriteLine($" Main photo Hotel: {images[numb]}");
-            Console.WriteLine(">");
-            Console.WriteLine($" More info url: {url}");
-            Console.WriteLine(">");
-            Console.WriteLine($" 1 image: {images[0]}");
-            Console.WriteLine($" 2 image: {images[1]}");
-            Console.WriteLine($" 3 image: {images[2]}");
-            Console.WriteLine(">");
-            Console.ResetColor();
+                Message t = await botClient.SendTextMessageAsync
+                (
+                    message.Chat.Id,
+                    text: "An error has occurred",
+                    cancellationToken: cancellationToken,
+                    replyToMessageId: mId
+                );
+            }
 
             return a;
         }
@@ -123,35 +122,62 @@ namespace TestTelrgramBot
                 Console.WriteLine("------------");
                 Console.ResetColor();
 
-               
+                try
+                {
 
-                await botClient.SendVenueAsync
-                (
-                    chatId: message.Chat.Id ,
-                    latitude: la,
-                    longitude: lo,
-                    title: name.ToUpper(),
-                    address: name,
-                    cancellationToken: cancellationToken,
-                   replyToMessageId: hotelMId
-                );
+
+                    await botClient.SendVenueAsync
+                    (
+                        chatId: message.Chat.Id,
+                        latitude: la,
+                        longitude: lo,
+                        title: name.ToUpper(),
+                        address: name,
+                        cancellationToken: cancellationToken,
+                       replyToMessageId: hotelMId
+                    );
+                }catch (Exception ex)
+                {
+
+                    Message t = await botClient.SendTextMessageAsync
+                    (
+                        message.Chat.Id,
+                        text: "An error has occurred",
+                        cancellationToken: cancellationToken,
+                        replyToMessageId: mId
+                    );
+                }
                 return;
+
             }else if (callbackQuery.Data.StartsWith("HotelMorePhoto"))
             {
-                Console.WriteLine("HotelMorePhoto");
-                await botClient.SendTextMessageAsync(message.Chat.Id, callbackQuery.Data);
-                await botClient.SendMediaGroupAsync
-                (
-                   callbackQuery.Message.Chat.Id,
-                   media: new IAlbumInputMedia[]
-                   {
+                try
+                {
+                    Console.WriteLine("HotelMorePhoto");
+                    await botClient.SendTextMessageAsync(message.Chat.Id, callbackQuery.Data);
+                    await botClient.SendMediaGroupAsync
+                    (
+                       callbackQuery.Message.Chat.Id,
+                       media: new IAlbumInputMedia[]
+                       {
                        new InputMediaPhoto(images[0]),
                        new InputMediaPhoto(images[1]),
                        new InputMediaPhoto(images[2])
-                   },
-                   replyToMessageId: hotelMId
+                       },
+                       replyToMessageId: hotelMId
 
-                ) ;
+                    );
+
+                }catch(Exception ex)
+                {
+                    Message t = await botClient.SendTextMessageAsync
+                    (
+                        message.Chat.Id,
+                        text: "An error has occurred",
+                        cancellationToken: cancellationToken,
+                        replyToMessageId: mId
+                    );
+                }
                 
                 return;
             }
