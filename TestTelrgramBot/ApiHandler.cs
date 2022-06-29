@@ -124,8 +124,10 @@ namespace TestTelrgramBot
                 (
                     new PlacesNearbyInfoMassegeModel(botClient, cancellationToken, message)
                     {
-                        latitude = double.Parse(placeNearbyInfoModel.results[i].location.lat.ToString().Replace('.', ',')),
-                        longitude = double.Parse(placeNearbyInfoModel.results[i].location.lng.ToString().Replace('.', ',')),
+                    //    latitude = double.Parse(placeNearbyInfoModel.results[i].location.lat.ToString().Replace('.', ',')),
+                    //    longitude = double.Parse(placeNearbyInfoModel.results[i].location.lng.ToString().Replace('.', ',')),
+                        latitude = double.Parse(placeNearbyInfoModel.results[i].location.lat.ToString()),
+                        longitude = double.Parse(placeNearbyInfoModel.results[i].location.lng.ToString()),
                         name = placeNearbyInfoModel.results[i].name,
                         address = placeNearbyInfoModel.results[i].address == null ? "" : placeNearbyInfoModel.results[i].address,
                         phone_number = placeNearbyInfoModel.results[i].phone_number,
