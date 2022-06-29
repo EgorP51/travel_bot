@@ -115,7 +115,7 @@ namespace TestTelrgramBot
                 (
                     chatId: message.Chat.Id,
                     latitude: Convert.ToDouble(lat),
-                    longitude: lo,
+                    longitude: Convert.ToDouble(lng),
                     title: name.ToUpper(),
                     address: name,
                     cancellationToken: cancellationToken,
