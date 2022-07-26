@@ -1,16 +1,15 @@
-﻿using System;
+﻿using Telegram.Bot.Types.ReplyMarkups;using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using TestTelrgramBot.Clients;
+using Telegram.Bot.Extensions;
+using TestTelrgramBot.Models;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 using Newtonsoft.Json;
 using Telegram.Bot;
-using Telegram.Bot.Extensions;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using TestTelrgramBot.Models;
-using Telegram.Bot.Types.ReplyMarkups;
-using TestTelrgramBot.Clients;
+using System.Linq;
+using System.Text;
+using System;
 
 namespace TestTelrgramBot
 {
@@ -27,7 +26,6 @@ namespace TestTelrgramBot
         public PlacesNearbyInfoModel placeNearbyInfoModel { get; set; }
         public static int n { get; set; } = 0;
 
-
         public PlacesNearbyInfoMassegeModel placeNearbyInfoMassegeModel { get; set; }
         public CityMessageModel cityMessageModel { get; set; }
         public WeatherMessageModel weatherMessageModel { get; set; }
@@ -39,8 +37,6 @@ namespace TestTelrgramBot
         int adults { get; set; }
         public string userId { get; set; }
 
-
-
         public ApiHandler(ITelegramBotClient botClient, CancellationToken cancellationToken, Message message, string city)
         {
             this.botClient = botClient;
@@ -48,25 +44,26 @@ namespace TestTelrgramBot
             this.message = message;
             this.city = city;
 
-
-
-            searchInfoModel = new CityClient().GetCityInfoAsync(city).Result; // Информация о городе из джсона
-            weatherModel = new WeatherClient().GetWeatherAsync(city).Result;  // Иnформация о погоде из джсона
+            searchInfoModel = new CityClient().GetCityInfoAsync(city).Result; // city information from json
+            weatherModel = new WeatherClient().GetWeatherAsync(city).Result;  // weather information from json
 
             if (searchInfoModel != null && weatherModel != null)
             {
                 weatherMessageModel = WeatherMessendge().Result;
-                cityMessageModel = CityMessage().Result; // Получаю готовое сообщение о городе
+                cityMessageModel = CityMessage().Result; // receive a ready-made message about the city
             }
-
             if (cityMessageModel != null)
             {
                 cityMessageModel.weatherMessageModel = weatherMessageModel;
             }
-
         }
+
         public bool CorrectlyEnteredCity(string text)
         {
+            //method for checking the correctness of the entered city name.
+            //If the name entered and the name returned by the api are more
+            //than 60% similar, the check is passed
+
             if (weatherModel != null && searchInfoModel != null)
             {
                 if (Compute(weatherModel.location.city.ToLower(), searchInfoModel.title.ToLower()) > 60 &&
@@ -85,7 +82,6 @@ namespace TestTelrgramBot
             {
                 return false;
             }
-
         }
         private double Compute(string s, string t)
         {
@@ -115,7 +111,8 @@ namespace TestTelrgramBot
 
         public async Task<List<PlacesNearbyInfoMassegeModel>> PlacesNearbyMessage(string lat, string lng, string type)
         {
-            placeNearbyInfoModel = new PlacesNearbyInfoClient().GetInfoAsync(lat, lng, type).Result;
+            // the method returns information about places near the selected hotel from api
+                        placeNearbyInfoModel = new PlacesNearbyInfoClient().GetInfoAsync(lat, lng, type).Result;
             List<PlacesNearbyInfoMassegeModel> placesNearbyInfoMassegeModels = new List<PlacesNearbyInfoMassegeModel>();
 
             for (int i = 0; i < placeNearbyInfoModel.results.Length; i++)
@@ -136,19 +133,17 @@ namespace TestTelrgramBot
                     }
                 );
             }
-
             return placesNearbyInfoMassegeModels;
         }
 
         public async Task<CityMessageModel> CityMessage()
         {
+            // the method returns information about cities near the selected hotel from api
             if (searchInfoModel.title != null && searchInfoModel.url != null &&
                 searchInfoModel.summary[0] != null && searchInfoModel.image != null)
             {
                 try
                 {
-
-
                     string firstText = searchInfoModel.summary[0].Length > searchInfoModel.summary[1].Length ? searchInfoModel.summary[0] : searchInfoModel.summary[1];
                     string secondText = searchInfoModel.summary[2].Length > firstText.Length ? searchInfoModel.summary[2] : firstText;
 
@@ -177,29 +172,23 @@ namespace TestTelrgramBot
             {
                 return null;
             }
-
         }
 
         public async Task GetHotelAsync(string date)
         {
-            Console.WriteLine("Я в GetHotelAsync(string date)0");
             hotelMessageModels = new List<HotelMessageModel>();
-            Console.WriteLine("Я в GetHotelAsync(string date)1");
+            hotelMessageModels = await HotelsList(date);
 
-            hotelMessageModels = await HotelsList(date);// here
-
-            Console.WriteLine("Я в GetHotelAsync(string date)2");
             if (hotelMessageModels == null)
             {
                 await botClient.SendStickerAsync(message.Chat.Id, "https://chpic.su/_data/stickers/j/Jjaba_Sticker/Jjaba_Sticker_007.webp");
-                await botClient.SendTextMessageAsync(message.Chat.Id, $"Произошла ошибка с вводом данных ГОСТИНИЦЫ");
+                await botClient.SendTextMessageAsync(message.Chat.Id, $"There was a data entry error");
                 return;
             }
             else
             {
                 foreach (var mess in hotelMessageModels)
                 {
-                    Console.WriteLine("Я в отелях! 3");
                     mess.GetHotelMessageModel(message);
                 }
             }
@@ -254,43 +243,37 @@ namespace TestTelrgramBot
 
                     weather += $"{weatherDay.day.ToUpper()}: min {weatherDay.low} °С - max {weatherDay.high} °С\n" +
                                $"Short description: {weatherDay.text} {weatherSticker}\n" +
-                               $"___________________________________________\n";
+                               $"______________________________________\n";
                 }
             }
             else
             {
-                weather = "Проблема с вводом данных:)";
+                weather = "Problem with data entry :)";
             }
-
             WeatherMessageModel weatherMessageModel = new WeatherMessageModel(botClient, cancellationToken, message)
             {
                 forecasts = weather,
                 mId = apiHandlerMessageId
-
             };
-
             return weatherMessageModel;
         }
 
         public async Task<List<HotelMessageModel>> HotelsList(string date)
         {
-            checkin = date.Split(',')[0]; //TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+            checkin = date.Split(',')[0]; 
             checkout = date.Split(',')[1];
             adults = int.Parse(date.Split(',')[2]);
 
-            Console.WriteLine(0);
             hotelsList = await new HotelsClient().GetHotelsAsync(city, checkin, checkout, adults);
-            Console.WriteLine(1);
+
             if (hotelsList == null)
             {
                 return null;
-
             }
             else if (hotelMessageModels == null)
             {
                 return null;
             }
-            Console.WriteLine(2);
             for (int i = 0; i < hotelsList.results.Length; i++)
             {
                 hotelMessageModels.Add(new HotelMessageModel(botClient, cancellationToken, message, i)
@@ -308,12 +291,9 @@ namespace TestTelrgramBot
                     rating = hotelsList.results[i].rating,
                     mId = apiHandlerMessageId,
                     numb = i
-
                 });
             }
-            Console.WriteLine(3);
             return hotelMessageModels;
         }
-
     }
 }
