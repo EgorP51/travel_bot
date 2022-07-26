@@ -20,15 +20,15 @@ namespace TestTelrgramBot
 {
     class AbungaBangaBot
     {
+        ReceiverOptions receiverOptions = new ReceiverOptions { AllowedUpdates = { } };
         TelegramBotClient botClient = new TelegramBotClient(Constants.BotKey);
         CancellationToken cancellationToken = new CancellationToken();
-        ReceiverOptions receiverOptions = new ReceiverOptions { AllowedUpdates = { } };
+        public List<PlacesNearbyInfoMassegeModel> placeNearlyMessages { get; set; }
         public List<HotelMessageModel> hotelMessageModels { get; set; }
         public CityMessageModel cityMessageModel { get; set; }
         private ApiHandler apiHandler { get; set; }
-        public List<PlacesNearbyInfoMassegeModel> placeNearlyMessages { get; set; }
-        private bool reviewText = false;
         private string[] userRoutes { get; set; }
+        private bool reviewText = false;
 
         public async Task Start()
         {
@@ -37,12 +37,11 @@ namespace TestTelrgramBot
             Console.WriteLine("Bot at work...");
             Console.ReadKey();
         }
-
         private Task HandlerError(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
             var ErrorMassage = exception switch
             {
-                ApiRequestException apiRequestException => $"Черт, да тут ошибка с апи:\n{apiRequestException.ErrorCode}" +
+                ApiRequestException apiRequestException => $"Damn, there's an error with the API:\n{apiRequestException.ErrorCode}" +
                 $"\n{apiRequestException.Message}",
                 _ => exception.ToString()
             };
@@ -50,36 +49,34 @@ namespace TestTelrgramBot
             return Task.CompletedTask;
         }
 
-        private async Task HandlerUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken) // Вот тупо база
+        //Work with all updates happens here
+        private async Task HandlerUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             if (update.Type == UpdateType.Message && update.Message?.Text != null)
             {
-
+                //calling a message handler method
                 await HandlerMassageAsync(botClient, update.Message);
-
                 return;
             }
             if (update.Type == UpdateType.CallbackQuery && apiHandler != null)
             {
-
+                //calling different methods to handle pressed buttons depending on callbackData
                 if (update.CallbackQuery.Data.StartsWith("Hotel"))
                 {
                     Console.WriteLine("HandlerCallbackQueryHotel");
                     ApiHandler.n = int.Parse(update.CallbackQuery.Data.Split(' ')[1]);
                     await apiHandler.hotelMessageModels[ApiHandler.n].HandlerCallbackQueryHotel(update.CallbackQuery, update.CallbackQuery.Message);
                     return;
-
                 }
                 else if (update.CallbackQuery.Data.StartsWith("City"))
                 {
                     Console.WriteLine("HandlerCallbackQueryCity");
                     await apiHandler.cityMessageModel.HandlerCallbackQueryCity(update.CallbackQuery);
                     return;
-
                 }
                 else if (update.CallbackQuery.Data.StartsWith("Info"))
                 {
-
+                    Console.WriteLine("HandlerCallbackQueryInfo");
                     string type = update.CallbackQuery.Data.Replace("Info", "").ToLower();
                     placeNearlyMessages = await apiHandler.PlacesNearbyMessage(apiHandler.hotelMessageModels[ApiHandler.n].lat, apiHandler.hotelMessageModels[ApiHandler.n].lng, type);
                     if (placeNearlyMessages == null || placeNearlyMessages.Count == 0)
@@ -100,59 +97,42 @@ namespace TestTelrgramBot
                         }
                     }
                     return;
-
                 }
                 else if (update.CallbackQuery.Data.StartsWith("Place"))
                 {
-
                     int n = int.Parse(update.CallbackQuery.Data.Split(' ')[1]);
                     await placeNearlyMessages[n].HandlerCallbackQueryInfo(update.CallbackQuery, botClient);
                     return;
-
                 }
                 else if (update.CallbackQuery.Data == "SaveRoute")
                 {
-
                     var route = await new DatabaseClient().AddItem(
                         apiHandler.userId,
                         apiHandler.city, PlacesNearbyInfoMassegeModel.routeUrl);
                     Console.WriteLine(route);
-                    Console.WriteLine(update.CallbackQuery.From.Username + " сохранил(а) маршрут");
+                    Console.WriteLine(update.CallbackQuery.From.Username + " saved the route");
                     await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Your route has been saved");
                     return;
-
                 }
                 else if (update.CallbackQuery.Data == "Delete")
                 {
                     await new DatabaseClient().DeleteAllRoutes(update.CallbackQuery.Message.Chat.Id.ToString(), apiHandler.city);
                     var yur = await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Route deleted successfully");
                     return;
-
-
                 }
                 else if (update.CallbackQuery.Data.StartsWith("delete"))
                 {
-
                     string[] info = update.CallbackQuery.Data.Split('.');
-                    foreach (var y in info)
-                    {
-                        Console.WriteLine(y);
-                    }
-                    Console.WriteLine(info[3]);
-                    Console.WriteLine(userRoutes[int.Parse(info[3])]);
                     string route = userRoutes[int.Parse(info[3])];
 
                     var delRoute = await new DatabaseClient().DeleteItem(info[1], info[2], route);
 
-                    Console.WriteLine(route);
-                    Console.WriteLine(update.CallbackQuery.From.Username + " удалил(а) маршрут");
+                    Console.WriteLine(update.CallbackQuery.From.Username + " deleted route");
                     await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "The route has been deleted");
                     return;
-
                 }
                 else
                 {
-                    Console.WriteLine("Not My CallbackQuery");
                     await HandlerCallbackQuery(botClient, update.CallbackQuery);
                     return;
                 }
@@ -160,19 +140,17 @@ namespace TestTelrgramBot
 
         }
 
-
-
-
         private async Task HandlerMassageAsync(ITelegramBotClient botClient, Message message)
         {
-            Console.WriteLine("-----------------");
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine(message.From.Username);
-            Console.WriteLine(message.From.Id);
-            Console.WriteLine(message.Text);
-            Console.ResetColor();
-            Console.WriteLine("-----------------");
-
+            {
+                //Console.WriteLine("-----------------");
+                //Console.ForegroundColor = ConsoleColor.DarkYellow;
+                //Console.WriteLine(message.From.Username);
+                //Console.WriteLine(message.From.Id);
+                //Console.WriteLine(message.Text);
+                //Console.ResetColor();
+                //Console.WriteLine("-----------------");
+            }
             if (reviewText)
             {
                 string Text = $"Пользователь {message.From.Username} отправил отзыв:\n {message.Text}";
@@ -242,7 +220,6 @@ namespace TestTelrgramBot
             }
             else if (message.Text == "/deleteone")
             {
-                //TODO: удалить один маршрут
                 if (apiHandler != null)
                 {
                     var te = await new DatabaseClient().GetFromDb(message.From.Id.ToString(), apiHandler.city);
@@ -256,7 +233,6 @@ namespace TestTelrgramBot
                         }
 
                         InlineKeyboardMarkup inlineKeyboardMarkup = GetInlineKeyboardCallBackData(data);
-
 
                         await botClient.SendTextMessageAsync(message.Chat.Id, $"My routes in {apiHandler.city}", replyMarkup: inlineKeyboardMarkup);
 
@@ -324,13 +300,11 @@ namespace TestTelrgramBot
                         {
                             data.Add($"{i + 1} route", te.NewValue[i]);
                         }
-
                         InlineKeyboardMarkup inlineKeyboardMarkup = GetInlineKeyboardUrl(data);
-
 
                         await botClient.SendTextMessageAsync(message.Chat.Id, $"My routes in {apiHandler.city}", replyMarkup: inlineKeyboardMarkup);
 
-                        Console.WriteLine(message.From.Username + " смотрит свои маршруты");
+                        Console.WriteLine(message.From.Username + " looks at his routes");
                         return;
                     }
                     else
@@ -342,17 +316,12 @@ namespace TestTelrgramBot
                 else
                 {
                     await botClient.SendTextMessageAsync(message.Chat.Id, "<em>Enter the city</em>", ParseMode.Html);
-                    //await botClient.SendTextMessageAsync(message.Chat.Id, "<a>Enter the city</a>", ParseMode.Html);
-                    //await botClient.SendTextMessageAsync(message.Chat.Id, "<b>Enter the city</b>", ParseMode.Html); 
-                    //await botClient.SendTextMessageAsync(message.Chat.Id, "<strong>Enter the city</strong>", ParseMode.Html);
-                    //await botClient.SendTextMessageAsync(message.Chat.Id, "<del>Enter the city</del>", ParseMode.Html);
                     return;
                 }
 
             }
             else if (!message.Text.StartsWith("/") && !message.Text.StartsWith("2") && message.Text != null)
             {
-                Console.WriteLine("CITYCITYCITY");
                 string city = "";
 
                 if (!message.Text.StartsWith("2") && !message.Text.StartsWith("/"))
@@ -394,10 +363,10 @@ namespace TestTelrgramBot
                 {
                     date += day.Trim();
                 }
-
-                string reg = @"2022-[0-1][1-9]-[0-3][0-9],2022-[0-1][1-9]-[0-3][0-9],[1-9]";
+                string reg = @"2022-[0-1][0-9]-[0-3][0-9],2022-[0-1][0-9]-[0-3][0-9],[1-9]";
                 Regex regex = new Regex(reg);
                 Console.WriteLine(apiHandler != null && Regex.IsMatch(message.Text, reg));
+                Console.WriteLine($"{apiHandler != null} ||||||||  {Regex.IsMatch(message.Text, reg)}");
                 if (apiHandler != null && Regex.IsMatch(message.Text, reg))
                 {
                     Console.WriteLine("I am here 1");
@@ -414,33 +383,6 @@ namespace TestTelrgramBot
                 }
                 return;
             }
-            else if (message.Text.StartsWith("/testBut"))
-            {
-                var buttonItem = new[] { "https://en.wikipedia.org/wiki/Oslo", "https://en.wikipedia.org/wiki/Oslo", "https://en.wikipedia.org/wiki/Oslo", "https://en.wikipedia.org/wiki/Oslo" };
-                Dictionary<string, string> data = new Dictionary<string, string>();
-
-                data.Add("One", "https://en.wikipedia.org/wiki/Oslo");
-                data.Add("Two", "https://en.wikipedia.org/wiki/Oslo");
-                data.Add("Three", "https://en.wikipedia.org/wiki/Oslo");
-
-                InlineKeyboardMarkup inlineKeyboardMarkup = GetInlineKeyboardUrl(data);
-
-
-                await botClient.SendTextMessageAsync(message.Chat.Id, "B Test", replyMarkup: inlineKeyboardMarkup);
-            }
-            else if (message.Text.StartsWith("/") && message.Text != "/start")
-            {
-                await botClient.SendStickerAsync(message.Chat.Id, "https://chpic.su/_data/stickers/j/Jjaba_Sticker/Jjaba_Sticker_007.webp");
-                await botClient.SendTextMessageAsync(message.Chat.Id, $"Invalid data entered!");
-                return;
-            }
-            else if (message.Type == MessageType.Location)
-            {
-                var location = message.Location;
-
-                Console.WriteLine(location.Latitude);
-                Console.WriteLine(location.Longitude);
-            }
             else
             {
                 await botClient.SendStickerAsync(message.Chat.Id, "https://chpic.su/_data/stickers/j/Jjaba_Sticker/Jjaba_Sticker_007.webp");
@@ -448,11 +390,14 @@ namespace TestTelrgramBot
                 return;
             }
 
-
         }
 
         private static InlineKeyboardMarkup GetInlineKeyboardUrl(Dictionary<string, string> buttonsData)
         {
+            //the method accepts a Dictionary<string text, string url>
+            // and returns an inline keyboard
+
+
             // Rows Count
             int count = buttonsData.Count;
 
@@ -477,6 +422,9 @@ namespace TestTelrgramBot
         }
         private static InlineKeyboardMarkup GetInlineKeyboardCallBackData(Dictionary<string, string> buttonsData)
         {
+            //the method accepts a Dictionary<string text, string callBackData>
+            // and returns an inline keyboard
+
             // Rows Count
             int count = buttonsData.Count;
 
@@ -499,17 +447,18 @@ namespace TestTelrgramBot
 
             return new InlineKeyboardMarkup(buttons);
         }
-
-
-
-
         async Task HandlerCallbackQuery(ITelegramBotClient botClient, CallbackQuery callbackQuery)
         {
-            await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, text: "мимо мимо");
+            //the method is called if the processing of pressing a key is not registered
+            await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, text: "An error occurred while processing a button click");
+            Console.WriteLine($"An error occurred while processing a button click!\n{callbackQuery.Data} - is not registered") ;
             return;
         }
         private async Task<ApiHandler> CheckTheEnteredData(Message message)
         {
+            //a method that checks the correctness of the entered data (city name).
+            //If successful, returns an instance of the class ApiHandler,
+            //in which the connection with the api and the processing of information takes place
             ApiHandler handler = new ApiHandler(botClient, cancellationToken, message, message.Text);
 
             string[] name = message.Text.Split(' ');

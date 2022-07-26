@@ -102,15 +102,6 @@ namespace TestTelrgramBot
 
                 double la = Convert.ToDouble(lat.Replace('.', ','));
                 double lo = Convert.ToDouble(lng.Replace('.', ','));
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("------------");
-                Console.WriteLine(la);
-                Console.WriteLine(lo);
-                Console.WriteLine("******");
-                Console.WriteLine(Convert.ToDouble(lng));
-                Console.WriteLine(Convert.ToDouble(lat));
-                Console.WriteLine("------------");
-                Console.ResetColor();
 
                 await botClient.SendVenueAsync
                 (
@@ -186,8 +177,5 @@ namespace TestTelrgramBot
             }
             return;
         }
-
-
-
     }
 }

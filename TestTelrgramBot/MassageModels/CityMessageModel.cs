@@ -27,11 +27,7 @@ namespace TestTelrgramBot
         public float longitude { get; set; }
         public int mId { get; set; }
 
-
-
-
         public CityMessageModel(string city, ITelegramBotClient botClient, CancellationToken cancellationToken, Message message)
-
         {
             this.city = city;
             this.botClient = botClient;

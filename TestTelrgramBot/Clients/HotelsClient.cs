@@ -14,25 +14,23 @@ namespace TestTelrgramBot
         public async Task<HotelModel> GetHotelsAsync(string city, string checkin, string checkout, int adults)
         {
             string uri = $"https://travel-bot-api.herokuapp.com/CityHotel?city={city}&checkin={checkin}&checkout={checkout}&adults={adults.ToString()}";
-            Console.WriteLine(uri);
+            
             var client = new HttpClient();
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri(uri),
-                Headers =
-                {
-                    { "X-RapidAPI-Key", Constants.ApiKey }
-                },
+                RequestUri = new Uri(uri)
             };
             var response = await client.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 response.EnsureSuccessStatusCode();
                 var body = await response.Content.ReadAsStringAsync();
+
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine(body);
                 Console.ResetColor();
+
                 HotelModel hotelModel = JsonConvert.DeserializeObject<HotelModel>(body);
                 if (hotelModel.results != null)
                 {
@@ -40,17 +38,15 @@ namespace TestTelrgramBot
                 }
                 else
                 {
-
-                    Console.WriteLine("null1");
+                    Console.WriteLine("null 1");
                     return null;
                 }
             }
             else
             {
-                Console.WriteLine("null1");
+                Console.WriteLine("null 2");
                 return null;
             }
-
         }
     }
 }

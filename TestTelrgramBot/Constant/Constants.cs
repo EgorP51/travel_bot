@@ -8,9 +8,9 @@ namespace TestTelrgramBot.Constant
 {
     public class Constants
     {
-        public const string ApiKey = "225f8c7ff7mshb7e7f4e4c0c08f4p141e90jsn8eecb2014b0b";
-        public const string AccessKeyDB = "AKIA2OYKR2QKAVXNRRNO";
-        public const string SecretAccessKeyDB = "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";
-        public const string BotKey = "5583909669:AAEUHGYg7NEA9VrWMz0gLiTmnn-zvt8qQwU";
+        //using environment variables
+        // 5583909669:AAEUHGYg7NEA9VrWMz0gLiTmnn-zvt8qQwU
+        public static readonly string BotKey = Environment.GetEnvironmentVariable("BotKey");
+        
     }
 }

@@ -17,17 +17,14 @@ namespace TestTelrgramBot
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri($"https://travel-bot-api.herokuapp.com/SearchInfo?text={city}"),
-                Headers =
-                {
-                    { "X-RapidAPI-Key",Constants.ApiKey }
-                },
+                RequestUri = new Uri($"https://travel-bot-api.herokuapp.com/SearchInfo?text={city}")
             };
             var response = await client.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 response.EnsureSuccessStatusCode();
                 var body = await response.Content.ReadAsStringAsync();
+                //json output to console
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine(body);
                 Console.ResetColor();
@@ -45,8 +42,6 @@ namespace TestTelrgramBot
             {
                 return null;
             }
-
-
         }
     }
 }

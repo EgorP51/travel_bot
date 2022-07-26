@@ -55,7 +55,6 @@ namespace TestTelrgramBot
             );
             await botClient.SendTextMessageAsync
             (
-
                 chatId: message.Chat.Id,
                 text: $"{name}\n{address}\n{phone_number}",
                 replyMarkup: inlineKeyboard
@@ -66,12 +65,6 @@ namespace TestTelrgramBot
         {
             if (callbackQuery.Data.StartsWith("PlaceMap"))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("-------------");
-                Console.WriteLine(latitude);
-                Console.WriteLine(longitude);
-                Console.WriteLine("-------------");
-                Console.ResetColor();
                 await botClient.SendVenueAsync
                    (
                        chatId: message.Chat.Id,
@@ -88,13 +81,6 @@ namespace TestTelrgramBot
             {
                 Console.ForegroundColor = ConsoleColor.Red;
 
-                Console.WriteLine(latitude);
-                Console.WriteLine(longitude);
-                Console.WriteLine("------------");
-                Console.WriteLine(Lat);
-                Console.WriteLine(Long);
-                Console.WriteLine("------------");
-                Console.ResetColor();
                 routeUrl = $"https://www.google.com/maps/dir/?api=1&origin={latitude.ToString().Replace(',', '.')},{longitude.ToString().Replace(',', '.')}&destination={Lat.ToString().Replace(',', '.')},{Long.ToString().Replace(',', '.')}&travelmode=walking";
                 InlineKeyboardMarkup inlineKeyboard = new
               (
@@ -111,16 +97,6 @@ namespace TestTelrgramBot
                 }
 
              );
-
-
-                Console.ForegroundColor = ConsoleColor.Green;
-
-                Console.WriteLine(">");
-                Console.WriteLine($" Your route: https://www.google.com/maps/dir/?api=1&origin={latitude.ToString().Replace(',', '.')},{longitude.ToString().Replace(',', '.')}&destination={Lat.ToString().Replace(',', '.')},{Long.ToString().Replace(',', '.')}&travelmode=walking");
-                Console.WriteLine(">");
-
-                Console.ResetColor();
-                //await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, $" ",replyMarkup: inlineKeyboard);
                 await botClient.SendStickerAsync(message.Chat.Id, "https://tgram.ru/wiki/stickers/img/JohnnyDepp_videopack/gif/10.gif", replyMarkup: inlineKeyboard);
                 return;
             }

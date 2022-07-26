@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TestTelrgramBot.Models;
 
+
 namespace TestTelrgramBot.Clients
 {
     public class DatabaseClient
@@ -40,7 +41,6 @@ namespace TestTelrgramBot.Clients
                 return null;
             }
         }
-
         public async Task<HttpResponseMessage> DeleteAllRoutes(string userId, string city)
         {
             try
@@ -71,13 +71,10 @@ namespace TestTelrgramBot.Clients
                 return null;
             }
         }
-
         public async Task<string> PostToDb(DatabaseModel databaseModel)
         {
             var json = JsonConvert.SerializeObject(databaseModel);
-
             var data = new StringContent(json, Encoding.UTF8, "application/json");
-
             var post = await client.PostAsync("https://travel-bot-api.herokuapp.com/InfoFromDB/add", data);
 
             var postcontent = post.Content.ReadAsStringAsync().Result;
@@ -90,9 +87,7 @@ namespace TestTelrgramBot.Clients
             {
                 return null;
             }
-
         }
-
         public async Task<string> AddItem(string userid, string city, string newRoute)
         {
             var person = new PutBody
@@ -115,10 +110,7 @@ namespace TestTelrgramBot.Clients
             {
                 return null;
             }
-
         }
-
-
         public async Task<string> DeleteItem(string userid, string city, string newRoute)
         {
             var person = new PutBody
@@ -139,20 +131,7 @@ namespace TestTelrgramBot.Clients
             {
                 return response.Content.ReadAsStringAsync().Result;
             }
-
         }
-
-    }
-    public class PutBody
-    {
-        public string UserId { get; set; }
-        public string City { get; set; }
-        public string NewRoute { get; set; }
-    }
-    public class DeleteBody
-    {
-        public string UserId { get; set; }
-        public string City { get; set; }
     }
 
 }
