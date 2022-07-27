@@ -57,3 +57,20 @@
 #### Search for hotels with specified parameters
 <img src="https://github.com/EgorP51/travel_bot/blob/master/Screenshots/7.png" width=440 height=455>
 
+#### Find useful places near the hotel
+##### Category selection
+<img src="https://github.com/EgorP51/travel_bot/blob/master/Screenshots/8.png" width=300 height=202>
+
+##### Search Results
+<img src="https://github.com/EgorP51/travel_bot/blob/master/Screenshots/9.png" width=300 height=600>
+
+#### Built route
+<img src="https://github.com/EgorP51/travel_bot/blob/master/Screenshots/10.png" width=290 height=314>
+
+#### View routes/delete one/delete all routes
+<img src="https://github.com/EgorP51/travel_bot/blob/master/Screenshots/11.png" width=400 height=437>
+
+#### Telegram bot also has recommendations on which services can also be used
+<img src="https://github.com/EgorP51/travel_bot/blob/master/Screenshots/12.png">
+
+---
