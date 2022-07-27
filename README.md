@@ -42,7 +42,18 @@
 #### View all commands via the /help command
 <img src="https://user-images.githubusercontent.com/93947345/181045762-2ae9183e-5530-4038-938f-79338c0aed8d.png" width=440 height=170>
 
-#### Start of work with the city
+#### Start of work with the city<br/>(command /city or clicking button)
 <img src="https://user-images.githubusercontent.com/93947345/181045765-d1027ccf-2796-438e-8d10-30a2919e3763.png" width=500 height=505>
 
-<img src="https://user-images.githubusercontent.com/93947345/181045785-c5490173-4c3d-4746-928d-f56c9589e71d.png" width=500 height=280>
+<img src="https://github.com/EgorP51/travel_bot/blob/master/Screenshots/4.png" width=500 height=280>
+
+#### Weather forecast<br/>(/weather command or inline button)
+
+<img src="https://github.com/EgorP51/travel_bot/blob/master/Screenshots/5.png" width=250 height=550>
+
+#### See the city on the map<br/>(clicking on an inline button)
+<img src="https://github.com/EgorP51/travel_bot/blob/master/Screenshots/6.png" width=300 height=300>
+
+#### Search for hotels with specified parameters
+<img src="https://github.com/EgorP51/travel_bot/blob/master/Screenshots/7.png" width=440 height=455>
+
