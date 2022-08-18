@@ -8,8 +8,8 @@ namespace TestTelrgramBot.Models
 {
     public class DatabaseModel
     {
-        public string UserId { get; set; }
-        public string City { get; set; }
-        public string[] NewValue { get; set; }
+        public string? UserId { get; set; }
+        public string? City { get; set; }
+        public string[]? NewValue { get; set; }
     }
 }

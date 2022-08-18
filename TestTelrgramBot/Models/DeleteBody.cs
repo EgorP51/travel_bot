@@ -8,7 +8,7 @@ namespace TestTelrgramBot.Models
 {
     public class DeleteBody
     {
-        public string UserId { get; set; }
-        public string City { get; set; }
+        public string? UserId { get; set; }
+        public string? City { get; set; }
     }
 }

@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TestTelrgramBot.Models;
+﻿using TestTelrgramBot.Models;
 using Newtonsoft.Json;
-using TestTelrgramBot.Constant;
 
 namespace TestTelrgramBot
 {
     public class HotelsClient
     {
-        public async Task<HotelModel> GetHotelsAsync(string city, string checkin, string checkout, int adults)
+        public async Task<HotelModel?> GetHotelsAsync(string city, string checkin, string checkout, int adultsNumber)
         {
-            string uri = $"https://travel-bot-api.herokuapp.com/CityHotel?city={city}&checkin={checkin}&checkout={checkout}&adults={adults.ToString()}";
+            string uri = $"https://travel-bot-api.herokuapp.com/CityHotel?city={city}&checkin={checkin}&checkout={checkout}&adults={adultsNumber.ToString()}";
             
             var client = new HttpClient();
             var request = new HttpRequestMessage
@@ -22,29 +16,17 @@ namespace TestTelrgramBot
                 RequestUri = new Uri(uri)
             };
             var response = await client.SendAsync(request);
+
             if (response.IsSuccessStatusCode)
             {
                 response.EnsureSuccessStatusCode();
                 var body = await response.Content.ReadAsStringAsync();
-
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine(body);
-                Console.ResetColor();
-
                 HotelModel hotelModel = JsonConvert.DeserializeObject<HotelModel>(body);
-                if (hotelModel.results != null)
-                {
-                    return hotelModel;
-                }
-                else
-                {
-                    Console.WriteLine("null 1");
-                    return null;
-                }
+                
+                return hotelModel.results != null ? hotelModel : null;
             }
             else
             {
-                Console.WriteLine("null 2");
                 return null;
             }
         }

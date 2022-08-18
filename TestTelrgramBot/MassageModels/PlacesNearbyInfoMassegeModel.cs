@@ -1,46 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Telegram.Bot;
-using Telegram.Bot.Extensions;
+﻿using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-using Newtonsoft.Json;
 
 namespace TestTelrgramBot
 {
     public class PlacesNearbyInfoMassegeModel
     {
-        public ITelegramBotClient botClient { get; set; }
-        public CancellationToken cancellationToken { get; set; }
-        public Message message { get; set; }
-        public string body { get; set; }
-        public int mId { get; set; }
-        public double latitude { get; set; }
-        public double longitude { get; set; }
-        public string name { get; set; }
-        public string address { get; set; }
-        public string phone_number { get; set; }
-        public string distance { get; set; }
-        public int numb { get; set; } = 0;
-
+        private ITelegramBotClient _botClient;
+        private CancellationToken _cancellationToken;
+        private Message _message;
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public string Phone_number { get; set; }
+        public int Numb { get; set; } = 0;
         public static double Lat { get; set; }
         public static double Long { get; set; }
-        public static string routeUrl { get; set; }
+        public static string? RouteUrl { get; set; }
 
 
         public PlacesNearbyInfoMassegeModel(ITelegramBotClient botClient, CancellationToken cancellationToken, Message message)
         {
-            this.message = message;
-            this.botClient = botClient;
-            this.cancellationToken = cancellationToken;
-            this.message = message;
+            _message = message;
+            _botClient = botClient;
+            _cancellationToken = cancellationToken;
+            _message = message;
         }
 
-        public async Task GetPlacesNearbyModel(Message message)
+        public async Task GetPlacesModelAsync(Message message)
         {
             InlineKeyboardMarkup inlineKeyboard = new
             (
@@ -48,56 +36,56 @@ namespace TestTelrgramBot
                {
                     new []
                     {
-                        InlineKeyboardButton.WithCallbackData(text: "Show on the map", callbackData: $"PlaceMap {numb}"),
-                        InlineKeyboardButton.WithCallbackData(text: "Build a route", callbackData: $"PlaceRoute {numb}")
+                        InlineKeyboardButton.WithCallbackData(text: "Show on the map", callbackData: $"PlaceMap {Numb}"),
+                        InlineKeyboardButton.WithCallbackData(text: "Build a route", callbackData: $"PlaceRoute {Numb}")
                     }
                }
             );
-            await botClient.SendTextMessageAsync
+            await _botClient.SendTextMessageAsync
             (
                 chatId: message.Chat.Id,
-                text: $"{name}\n{address}\n{phone_number}",
+                text: $"{Name}\n{Address}\n{Phone_number}",
                 replyMarkup: inlineKeyboard
             );
         }
-
-        public async Task HandlerCallbackQueryInfo(CallbackQuery callbackQuery, ITelegramBotClient botClient)
+        public async Task InfoHandlerCallbackQueryAsync(CallbackQuery callbackQuery, ITelegramBotClient botClient)
         {
             if (callbackQuery.Data.StartsWith("PlaceMap"))
             {
                 await botClient.SendVenueAsync
                    (
-                       chatId: message.Chat.Id,
-                       latitude: latitude,
-                       longitude: longitude,
-                       title: name,
-                       address: address,
-                       cancellationToken: cancellationToken
+                       chatId: _message.Chat.Id,
+                       latitude: Latitude,
+                       longitude: Longitude,
+                       title: Name,
+                       address: Address,
+                       cancellationToken: _cancellationToken
                    );
-
                 return;
             }
+            else
             if (callbackQuery.Data.StartsWith("PlaceRoute"))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
+                RouteUrl = $"https://www.google.com/maps/dir/?api=1&origin=" +
+                    $"{Latitude.ToString().Replace(',', '.')},{Longitude.ToString().Replace(',', '.')}&destination=" +
+                    $"{Lat.ToString().Replace(',', '.')},{Long.ToString().Replace(',', '.')}&travelmode=walking";
 
-                routeUrl = $"https://www.google.com/maps/dir/?api=1&origin={latitude.ToString().Replace(',', '.')},{longitude.ToString().Replace(',', '.')}&destination={Lat.ToString().Replace(',', '.')},{Long.ToString().Replace(',', '.')}&travelmode=walking";
                 InlineKeyboardMarkup inlineKeyboard = new
               (
                 new[]
                 {
                     new []
                     {
-                        InlineKeyboardButton.WithUrl("Your route is ready",routeUrl),
+                        InlineKeyboardButton.WithUrl("Your route is ready",RouteUrl),
                     },
-                     new []
+                    new []
                     {
                         InlineKeyboardButton.WithCallbackData("Save route 🟢","SaveRoute"),
                     }
                 }
 
-             );
-                await botClient.SendStickerAsync(message.Chat.Id, "https://tgram.ru/wiki/stickers/img/JohnnyDepp_videopack/gif/10.gif", replyMarkup: inlineKeyboard);
+              );
+                await botClient.SendStickerAsync(_message.Chat.Id, "https://tgram.ru/wiki/stickers/img/JohnnyDepp_videopack/gif/10.gif", replyMarkup: inlineKeyboard);
                 return;
             }
         }

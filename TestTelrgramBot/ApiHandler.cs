@@ -1,170 +1,152 @@
-﻿using Telegram.Bot.Types.ReplyMarkups;using System;
-using System.Collections.Generic;
-using TestTelrgramBot.Clients;
-using Telegram.Bot.Extensions;
+﻿using TestTelrgramBot.Clients;
 using TestTelrgramBot.Models;
-using System.Threading.Tasks;
 using Telegram.Bot.Types;
-using Newtonsoft.Json;
 using Telegram.Bot;
-using System.Linq;
-using System.Text;
-using System;
+
 
 namespace TestTelrgramBot
 {
     class ApiHandler
     {
-        public ITelegramBotClient botClient { get; set; }
-        public CancellationToken cancellationToken { get; set; }
-        public Message message { get; set; }
-
-        public List<HotelMessageModel> hotelMessageModels { get; set; }
-        public WeatherModel weatherModel { get; set; }
-        public HotelModel hotelsList { get; set; }
-        public SearchInfoModel searchInfoModel { get; set; }
-        public PlacesNearbyInfoModel placeNearbyInfoModel { get; set; }
-        public static int n { get; set; } = 0;
-
-        public PlacesNearbyInfoMassegeModel placeNearbyInfoMassegeModel { get; set; }
-        public CityMessageModel cityMessageModel { get; set; }
-        public WeatherMessageModel weatherMessageModel { get; set; }
-
-        public int apiHandlerMessageId { get; set; }
-        public string city { get; set; }
-        string checkin { get; set; }
-        string checkout { get; set; }
-        int adults { get; set; }
-        public string userId { get; set; }
+        private ITelegramBotClient _botClient;
+        private CancellationToken _cancellationToken;
+        private Message _message;
+        private WeatherModel _weatherModel;
+        private HotelModel _hotelsList;
+        private SearchInfoModel _searchInfoModel;
+        private PlacesNearbyInfoModel _placeNearbyInfoModel;
+        private string _checkout;
+        private int _adults;
+        private string _checkin { get; set; }
+        public List<HotelMessageModel> HotelMessageModels { get; set; }
+        public WeatherMessageModel WeatherMessageModel { get; set; }
+        public int ApiHandlerMessageId { get; set; }
+        public CityMessageModel CityMessageModel { get; set; }
+        public string City { get; set; }
+        public string UserId { get; set; }
+        public static int N { get; set; } = 0;
 
         public ApiHandler(ITelegramBotClient botClient, CancellationToken cancellationToken, Message message, string city)
         {
-            this.botClient = botClient;
-            this.cancellationToken = cancellationToken;
-            this.message = message;
-            this.city = city;
+            _botClient = botClient;
+            _cancellationToken = cancellationToken;
+            _message = message;
+            City = city;
 
-            searchInfoModel = new CityClient().GetCityInfoAsync(city).Result; // city information from json
-            weatherModel = new WeatherClient().GetWeatherAsync(city).Result;  // weather information from json
+            _searchInfoModel = new CityClient().GetCityInfoAsync(city).Result; // city information from json
+            _weatherModel = new WeatherClient().GetWeatherAsync(city).Result;  // weather information from json
 
-            if (searchInfoModel != null && weatherModel != null)
+            if (_searchInfoModel != null && _weatherModel != null)
             {
-                weatherMessageModel = WeatherMessendge().Result;
-                cityMessageModel = CityMessage().Result; // receive a ready-made message about the city
+                WeatherMessageModel = WeatherMessendgeAsync().Result;
+                CityMessageModel = CityMessageAsync().Result; // receive a ready-made message about the city
             }
-            if (cityMessageModel != null)
+            if (CityMessageModel != null)
             {
-                cityMessageModel.weatherMessageModel = weatherMessageModel;
+                CityMessageModel.WeatherMessageModel = WeatherMessageModel;
             }
         }
 
         public bool CorrectlyEnteredCity(string text)
         {
-            //method for checking the correctness of the entered city name.
-            //If the name entered and the name returned by the api are more
-            //than 60% similar, the check is passed
-
-            if (weatherModel != null && searchInfoModel != null)
+            // Method for checking the correctness of the entered city name.
+            // If the name entered and the name returned by the api are more
+            // than 60% similar, the check is passed.
+            if (_weatherModel != null && _searchInfoModel != null)
             {
-                if (Compute(weatherModel.location.city.ToLower(), searchInfoModel.title.ToLower()) > 60 &&
-                    Compute(weatherModel.location.city.ToLower(), text.ToLower()) > 60 &&
-                    Compute(text.ToLower(), searchInfoModel.title.ToLower()) > 60)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                bool isCorrect = Compute(_weatherModel.location.city.ToLower(), _searchInfoModel.title.ToLower()) > 60 &&
+                                 Compute(_weatherModel.location.city.ToLower(), text.ToLower()) > 60 &&
+                                 Compute(text.ToLower(), _searchInfoModel.title.ToLower()) > 60;
 
+                return isCorrect;
             }
             else
             {
                 return false;
             }
         }
-        private double Compute(string s, string t)
+        private double Compute(string firstWord, string secondWord)
         {
-            int n = s.Length;
-            int m = t.Length;
+            int firstLength = firstWord.Length;
+            int secondLength = secondWord.Length;
 
-            double final = n > m ? n : m;
+            double final = firstLength > secondLength ? firstLength : secondLength;
 
-            int[,] d = new int[n + 1, m + 1];
+            int[,] d = new int[firstLength + 1, secondLength + 1];
 
-            for (int i = 0; i <= n; d[i, 0] = i++) ;
-            for (int j = 1; j <= m; d[0, j] = j++) ;
+            for (int i = 0; i <= firstLength; d[i, 0] = i++) ;
+            for (int j = 1; j <= secondLength; d[0, j] = j++) ;
 
-            for (int i = 1; i <= n; i++)
+            for (int i = 1; i <= firstLength; i++)
             {
-                for (int j = 1; j <= m; j++)
+                for (int j = 1; j <= secondLength; j++)
                 {
-                    int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
+                    int cost = (secondWord[j - 1] == firstWord[i - 1]) ? 0 : 1;
                     int min1 = d[i - 1, j] + 1;
                     int min2 = d[i, j - 1] + 1;
                     int min3 = d[i - 1, j - 1] + cost;
                     d[i, j] = Math.Min(Math.Min(min1, min2), min3);
                 }
             }
-            return (final - Convert.ToDouble(d[n, m])) / final * 100;
+            return (final - Convert.ToDouble(d[firstLength, secondLength])) / final * 100;
         }
 
-        public async Task<List<PlacesNearbyInfoMassegeModel>> PlacesNearbyMessage(string lat, string lng, string type)
+        public async Task<List<PlacesNearbyInfoMassegeModel>> PlacesNearbyMessageAsync(string latitude, string longitude, string type)
         {
             // the method returns information about places near the selected hotel from api
-                        placeNearbyInfoModel = new PlacesNearbyInfoClient().GetInfoAsync(lat, lng, type).Result;
+            _placeNearbyInfoModel = await new PlacesNearbyInfoClient().GetInfoAsync(latitude, longitude, type);
             List<PlacesNearbyInfoMassegeModel> placesNearbyInfoMassegeModels = new List<PlacesNearbyInfoMassegeModel>();
 
-            for (int i = 0; i < placeNearbyInfoModel.results.Length; i++)
+            for (int i = 0; i < _placeNearbyInfoModel.results.Length; i++)
             {
                 placesNearbyInfoMassegeModels.Add
                 (
-                    new PlacesNearbyInfoMassegeModel(botClient, cancellationToken, message)
+                    new PlacesNearbyInfoMassegeModel(_botClient, _cancellationToken, _message)
                     {
-                        //latitude = double.Parse(placeNearbyInfoModel.results[i].location.lat.ToString().Replace('.', ',')),
-                        //longitude = double.Parse(placeNearbyInfoModel.results[i].location.lng.ToString().Replace('.', ',')),
-                        latitude = placeNearbyInfoModel.results[i].location.lat,
-                        longitude = placeNearbyInfoModel.results[i].location.lng,
-                        name = placeNearbyInfoModel.results[i].name,
-                        address = placeNearbyInfoModel.results[i].address == null ? "" : placeNearbyInfoModel.results[i].address,
-                        phone_number = placeNearbyInfoModel.results[i].phone_number,
-                        distance = placeNearbyInfoModel.results[i].distance,
-                        numb = i
+                        Latitude = _placeNearbyInfoModel.results[i].location.lat,
+                        Longitude = _placeNearbyInfoModel.results[i].location.lng,
+                        Name = _placeNearbyInfoModel.results[i].name,
+                        Address = _placeNearbyInfoModel.results[i].address == null ? "" : _placeNearbyInfoModel.results[i].address,
+                        Phone_number = _placeNearbyInfoModel.results[i].phone_number,
+                        Numb = i
                     }
                 );
             }
             return placesNearbyInfoMassegeModels;
         }
 
-        public async Task<CityMessageModel> CityMessage()
+        public async Task<CityMessageModel?> CityMessageAsync()
         {
             // the method returns information about cities near the selected hotel from api
-            if (searchInfoModel.title != null && searchInfoModel.url != null &&
-                searchInfoModel.summary[0] != null && searchInfoModel.image != null)
+            bool modelIsEmpty = _searchInfoModel.title == null && _searchInfoModel.url == null &&
+                _searchInfoModel.summary[0] == null && _searchInfoModel.image == null;
+
+            if (!modelIsEmpty)
             {
                 try
                 {
-                    string firstText = searchInfoModel.summary[0].Length > searchInfoModel.summary[1].Length ? searchInfoModel.summary[0] : searchInfoModel.summary[1];
-                    string secondText = searchInfoModel.summary[2].Length > firstText.Length ? searchInfoModel.summary[2] : firstText;
+                    string firstText = _searchInfoModel.summary[0].Length > _searchInfoModel.summary[1].Length ? _searchInfoModel.summary[0] : _searchInfoModel.summary[1];
+                    string secondText = _searchInfoModel.summary[2].Length > firstText.Length ? _searchInfoModel.summary[2] : firstText;
 
-                    cityMessageModel = new CityMessageModel(city, botClient, cancellationToken, message)
+                    CityMessageModel = new CityMessageModel(City, _botClient, _cancellationToken, _message)
                     {
-                        title = searchInfoModel.title,
-                        body = secondText,
-                        infoUrl = searchInfoModel.url,
-                        mainPhoto = searchInfoModel.image
+                        Title = _searchInfoModel.title,
+                        Body = secondText,
+                        InfoUrl = _searchInfoModel.url,
+                        MainPhoto = _searchInfoModel.image
 
                     };
-                    cityMessageModel.message = message;
-                    cityMessageModel.latitude = weatherModel.location.lat;
-                    cityMessageModel.longitude = weatherModel.location.@long;
-                    cityMessageModel.title = searchInfoModel.title;
-                    cityMessageModel.infoUrl = searchInfoModel.url;
-                    return cityMessageModel;
+                    CityMessageModel.Message = _message;
+                    CityMessageModel.Latitude = _weatherModel.location.lat;
+                    CityMessageModel.Longitude = _weatherModel.location.@long;
+                    CityMessageModel.Title = _searchInfoModel.title;
+                    CityMessageModel.InfoUrl = _searchInfoModel.url;
+                    
+                    return CityMessageModel;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    Console.WriteLine(ex.ToString());
                     return null;
                 }
             }
@@ -176,33 +158,33 @@ namespace TestTelrgramBot
 
         public async Task GetHotelAsync(string date)
         {
-            hotelMessageModels = new List<HotelMessageModel>();
-            hotelMessageModels = await HotelsList(date);
+            HotelMessageModels = new List<HotelMessageModel>();
+            HotelMessageModels = await HotelsListAsync(date);
 
-            if (hotelMessageModels == null)
+            if (HotelMessageModels == null)
             {
-                await botClient.SendStickerAsync(message.Chat.Id, "https://chpic.su/_data/stickers/j/Jjaba_Sticker/Jjaba_Sticker_007.webp");
-                await botClient.SendTextMessageAsync(message.Chat.Id, $"There was a data entry error");
+                await _botClient.SendStickerAsync(_message.Chat.Id, "https://chpic.su/_data/stickers/j/Jjaba_Sticker/Jjaba_Sticker_007.webp");
+                await _botClient.SendTextMessageAsync(_message.Chat.Id, $"There was a data entry error");
                 return;
             }
             else
             {
-                foreach (var mess in hotelMessageModels)
+                foreach (var mess in HotelMessageModels)
                 {
-                    mess.GetHotelMessageModel(message);
+                    await mess.GetHotelMessageModelAsync(_message);
                 }
             }
         }
 
-        public async Task<WeatherMessageModel> WeatherMessendge()
+        public async Task<WeatherMessageModel> WeatherMessendgeAsync()
         {
             string weather = "";
             string weatherSticker = "";
 
-            if (weatherModel != null)
+            if (_weatherModel != null)
             {
-                weather += weatherModel.location.city + "\n" + weatherModel.location.country + "\n";
-                foreach (var weatherDay in weatherModel.forecasts)
+                weather += _weatherModel.location.city + "\n" + _weatherModel.location.country + "\n";
+                foreach (var weatherDay in _weatherModel.forecasts)
                 {
                     switch (weatherDay.text)
                     {
@@ -250,50 +232,47 @@ namespace TestTelrgramBot
             {
                 weather = "Problem with data entry :)";
             }
-            WeatherMessageModel weatherMessageModel = new WeatherMessageModel(botClient, cancellationToken, message)
+            WeatherMessageModel weatherMessageModel = new WeatherMessageModel(_botClient)
             {
                 forecasts = weather,
-                mId = apiHandlerMessageId
+                mId = ApiHandlerMessageId
             };
             return weatherMessageModel;
         }
 
-        public async Task<List<HotelMessageModel>> HotelsList(string date)
+        public async Task<List<HotelMessageModel>?> HotelsListAsync(string date)
         {
-            checkin = date.Split(',')[0]; 
-            checkout = date.Split(',')[1];
-            adults = int.Parse(date.Split(',')[2]);
+            _checkin = date.Split(',')[0];
+            _checkout = date.Split(',')[1];
+            _adults = int.Parse(date.Split(',')[2]);
 
-            hotelsList = await new HotelsClient().GetHotelsAsync(city, checkin, checkout, adults);
+            _hotelsList = await new HotelsClient().GetHotelsAsync(City, _checkin, _checkout, _adults);
 
-            if (hotelsList == null)
-            {
+            if (_hotelsList == null)
                 return null;
-            }
-            else if (hotelMessageModels == null)
-            {
+            else if (HotelMessageModels == null)
                 return null;
-            }
-            for (int i = 0; i < hotelsList.results.Length; i++)
+
+            for (int i = 0; i < _hotelsList.results.Length; i++)
             {
-                hotelMessageModels.Add(new HotelMessageModel(botClient, cancellationToken, message, i)
+                HotelMessageModels.Add(new HotelMessageModel(_botClient, _cancellationToken, i)
                 {
-                    images = hotelsList.results[i].images,
-                    name = hotelsList.results[i].name,
-                    bathrooms = hotelsList.results[i].bathrooms,
-                    bedrooms = hotelsList.results[i].bedrooms,
-                    beds = hotelsList.results[i].beds,
-                    lat = hotelsList.results[i].lat,
-                    lng = hotelsList.results[i].lng,
-                    url = hotelsList.results[i].url,
-                    previewAmenities = hotelsList.results[i].previewAmenities,
-                    total = hotelsList.results[i].price.total,
-                    rating = hotelsList.results[i].rating,
-                    mId = apiHandlerMessageId,
-                    numb = i
+                    Images = _hotelsList.results[i].images,
+                    Name = _hotelsList.results[i].name,
+                    Bathrooms = _hotelsList.results[i].bathrooms,
+                    Bedrooms = _hotelsList.results[i].bedrooms,
+                    Beds = _hotelsList.results[i].beds,
+                    Lat = _hotelsList.results[i].lat,
+                    Lng = _hotelsList.results[i].lng,
+                    Uri = _hotelsList.results[i].url,
+                    PreviewAmenities = _hotelsList.results[i].previewAmenities,
+                    Total = _hotelsList.results[i].price.total,
+                    Rating = _hotelsList.results[i].rating,
+                    MId = ApiHandlerMessageId,
+                    Numb = i
                 });
             }
-            return hotelMessageModels;
+            return HotelMessageModels;
         }
     }
 }

@@ -1,40 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Telegram.Bot;
-using Telegram.Bot.Extensions;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TestTelrgramBot
 {
     public class CityMessageModel
     {
-        public ITelegramBotClient botClient { get; set; }
-        public CancellationToken cancellationToken { get; set; }
-        public List<HotelMessageModel> hotelMessageModels { get; set; }
-        public WeatherMessageModel weatherMessageModel { get; set; }
-        public Message message { get; set; }
-        public string city { get; set; }
-        public string mainPhoto { get; set; }
-        public string title { get; set; }
-        public string body { get; set; }
-        public string infoUrl { get; set; }
-        public float latitude { get; set; }
-        public float longitude { get; set; }
-        public int mId { get; set; }
+        private string _city;
+        private ITelegramBotClient _botClient;
+        private CancellationToken _cancellationToken;
+        public WeatherMessageModel WeatherMessageModel { get; set; }
+        public Message Message { get; set; }
+        public string MainPhoto { get; set; }
+        public string Title { get; set; }
+        public string Body { get; set; }
+        public string InfoUrl { get; set; }
+        public float Latitude { get; set; }
+        public float Longitude { get; set; }
+        public int MId { get; set; }
+
 
         public CityMessageModel(string city, ITelegramBotClient botClient, CancellationToken cancellationToken, Message message)
         {
-            this.city = city;
-            this.botClient = botClient;
-            this.cancellationToken = cancellationToken;
+            _city = city;
+            _botClient = botClient;
+            _cancellationToken = cancellationToken;
         }
 
-        public async Task<int> GetCityMessageModel(Message message)
+        public async Task<int> GetCityMessageModelAsync(Message message)
         {
             InlineKeyboardMarkup inlineKeyboard = new
             (
@@ -42,7 +36,7 @@ namespace TestTelrgramBot
                {
                     new []
                     {
-                        InlineKeyboardButton.WithUrl(text: "More info ℹ️", infoUrl),
+                        InlineKeyboardButton.WithUrl(text: "More info ℹ️", InfoUrl),
                         InlineKeyboardButton.WithCallbackData("Weather ☀️",callbackData: "CityWeather")
                     },
                     new []
@@ -56,51 +50,44 @@ namespace TestTelrgramBot
                     }
                }
             );
-            Message mes;
+            Message tempMesssage;
             try
             {
-                mes = await botClient.SendPhotoAsync
+                tempMesssage = await _botClient.SendPhotoAsync
                 (
-                    message.Chat.Id,
-                    photo: mainPhoto,
-                    caption: $"{title}\n{body}",
+                    chatId: message.Chat.Id,
+                    photo: MainPhoto,
+                    caption: $"{Title}\n{Body}",
                     replyMarkup: inlineKeyboard,
-                    cancellationToken: cancellationToken
+                    cancellationToken: _cancellationToken
                 );
             }
             catch (Exception ex)
             {
-                mes = await botClient.SendPhotoAsync
+                Console.WriteLine(ex.ToString());
+                tempMesssage = await _botClient.SendPhotoAsync
                 (
                    message.Chat.Id,
                    photo: "https://www.salonlfc.com/wp-content/uploads/2018/01/image-not-found-scaled-1150x647.png",
-                   caption: $"(city ​​photos not found)\n{title}\n{body}",
+                   caption: $"(city ​​photos not found)\n{Title}\n{Body}",
                    replyMarkup: inlineKeyboard,
-                   cancellationToken: cancellationToken
+                   cancellationToken: _cancellationToken
                 );
             }
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(">");
-            Console.WriteLine($" Main photo city: {mainPhoto}");
-            Console.WriteLine(">");
-            Console.WriteLine($" info url: {infoUrl}");
-            Console.WriteLine(">");
-            Console.ResetColor();
-
-            return mes.MessageId;
+            return tempMesssage.MessageId;
         }
 
-        public async Task HandlerCallbackQueryCity(CallbackQuery callbackQuery)
+        public async Task CityHandlerCallbackQueryAsync(CallbackQuery callbackQuery)
         {
-            Console.WriteLine(callbackQuery.Data);
             if (callbackQuery.Data == "CityWeather")
             {
-                await weatherMessageModel.GetWeatherMessageModel(message);
+                await WeatherMessageModel.GetWeatherMessageModel(Message);
+                return;
             }
             else if (callbackQuery.Data == "CityHotels")
             {
-                await botClient.SendTextMessageAsync(message.Chat.Id,
+                await _botClient.SendTextMessageAsync(Message.Chat.Id,
                     "Enter the date of check-in, check-out and the number " +
                     "of people in this format: 2022-07-13,2022-07-16,2");
                 return;
@@ -133,32 +120,29 @@ namespace TestTelrgramBot
                     },
                 }
              );
-                await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Should help)))", replyMarkup: inlineKeyboard);
+                await _botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Should help)))", replyMarkup: inlineKeyboard);
                 return;
             }
             else if (callbackQuery.Data == "CityShowOnTheMap")
             {
-                Console.WriteLine(latitude);
-                Console.WriteLine(longitude);
-                await botClient.SendVenueAsync
+                await _botClient.SendVenueAsync
                 (
                     chatId: callbackQuery.Message.Chat.Id,
-                    latitude: latitude,
-                    longitude: longitude,
-                    title: city,
-                    address: title,
-                    cancellationToken: cancellationToken,
-                    replyToMessageId: mId
+                    latitude: Latitude,
+                    longitude: Longitude,
+                    title: _city,
+                    address: Title,
+                    cancellationToken: _cancellationToken,
+                    replyToMessageId: MId
 
                 );
                 return;
             }
             else
             {
-                await botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Что-то пошло не так:)");
+                await _botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Something went wrong:)");
                 return;
             }
-            return;
         }
     }
 }
